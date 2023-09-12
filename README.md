@@ -9,7 +9,7 @@ Figma: https://www.figma.com/files/team/1261903488080582373/CSIT321?fuid=1223836
 Default port (3000) 
 ```javascript
 npm install or npm install --legacy-peer-deps
-npm start
+npm run dev
 ```
 
 # Running The Backend

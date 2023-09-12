@@ -1,8 +1,10 @@
 import logo from './logo.svg';
+import Navbar from './components/Navbar';
 
 const App = () => {
   return (
     <div className="App">
+      <Navbar />
       <header className="App-header">
         <img src={logo} className="h-16" alt="logo" />
         <p>
