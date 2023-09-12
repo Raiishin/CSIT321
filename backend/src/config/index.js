@@ -9,5 +9,6 @@ export default {
     messagingSenderId: '203468609133',
     appId: '1:203468609133:web:d617410368cda8aca45164',
     measurementId: 'G-YVC83XESQR'
-  }
+  },
+  expectedOrigin: 'http://localhost:3000'
 };
