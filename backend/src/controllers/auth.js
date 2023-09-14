@@ -1,34 +1,24 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-/**
- * An example Express server showing off a simple integration of @simplewebauthn/server.
- *
- * The webpages served from ./public use @simplewebauthn/browser.
- */
-
+// Auth Controller
+import { initializeApp } from 'firebase/app';
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore/lite';
+import { isUndefined } from 'lodash-es';
+import dotenv from 'dotenv';
 import {
-  // Registration
   generateRegistrationOptions,
   verifyRegistrationResponse,
-  // Authentication
   generateAuthenticationOptions,
   verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import { isoBase64URL, isoUint8Array } from '@simplewebauthn/server/helpers';
-import dotenv from 'dotenv';
 import config from '../config/index.js';
+
+// Initialize Firebase
+const app = initializeApp(config.firebaseConfig);
+const db = getFirestore(app);
 
 dotenv.config();
 
-const { RP_ID = 'localhost' } = process.env;
-const { expectedOrigin } = config;
-/**
- * RP ID represents the "scope" of websites on which a authenticator should be usable. The Origin
- * represents the expected URL from which registration or authentication occurs.
- */
-export const rpID = RP_ID;
-// This value is set at the bottom of page as part of server initialization (the empty string is
-// to appease TypeScript until we determine the expected origin based on whether or not HTTPS
-// support is enabled)
+const { expectedOrigin, rpID } = config;
 
 /**
  * 2FA and Passwordless WebAuthn flows expect you to be able to uniquely identify the user that
@@ -38,27 +28,48 @@ export const rpID = RP_ID;
  *
  * Here, the example server assumes the following user has completed login:
  */
+
 const loggedInUserId = 'internalUserId';
 
 const inMemoryUserDeviceDB = {
   [loggedInUserId]: {
     id: loggedInUserId,
-    username: loggedInUserId,
+    name: loggedInUserId,
     devices: []
   }
 };
 
 const generateRegistration = async (req, res) => {
-  const user = inMemoryUserDeviceDB[loggedInUserId];
+  const { userId } = req.query;
+
+  // Query for user from firebase
+  // const usersData = await getDoc(doc(db, 'users', userId));
+
+  // const user = usersData.data();
+
+  // const devices = JSON.parse(user.devices);
+
+  if (!inMemoryUserDeviceDB.hasOwnProperty(userId)) {
+    inMemoryUserDeviceDB[userId] = {
+      id: userId,
+      name: userId,
+      devices: []
+    };
+  }
+
+  const user = inMemoryUserDeviceDB[userId];
+
+  const { devices } = user;
+
+  console.log('devices', devices);
 
   // The username can be a human-readable name, email, etc... as it is intended only for display.
-  const { username, devices } = user;
-
-  const opts = {
-    rpName: 'SimpleWebAuthn Example',
+  const options = await generateRegistrationOptions({
+    rpName: 'CSIT321 FYP',
     rpID,
-    userID: loggedInUserId,
-    userName: username,
+    userID: userId,
+    // userID: loggedInUserId,
+    userName: user.name,
     timeout: 60000,
     attestationType: 'none',
     /**
@@ -70,62 +81,149 @@ const generateRegistration = async (req, res) => {
     excludeCredentials: devices.map(dev => ({
       id: dev.credentialID,
       type: 'public-key',
+
       transports: dev.transports
     })),
-    authenticatorSelection: {
-      residentKey: 'discouraged'
-    },
+    authenticatorSelection: { residentKey: 'discouraged' },
     /**
      * Support the two most common algorithms: ES256, and RS256
      */
     supportedAlgorithmIDs: [-7, -257]
-  };
-
-  const options = await generateRegistrationOptions(opts);
-
-  /**
-   * The server needs to temporarily remember this value for verification, so don't lose it until
-   * after you verify an authenticator response.
-   */
-  req.session.currentChallenge = options.challenge;
+  });
 
   return res.send(options);
 };
 
 const generateAuthentication = async (req, res) => {
-  // You need to know the user by this point
-  const user = inMemoryUserDeviceDB[loggedInUserId];
+  const { userId } = req.query;
 
-  const opts = {
+  // Query for user from firebase
+  // const usersData = await getDoc(doc(db, 'users', userId));
+
+  // const user = usersData.data();
+
+  // const devices = JSON.parse(user.devices);
+
+  const user = inMemoryUserDeviceDB[userId];
+
+  const { devices } = user;
+
+  const options = await generateAuthenticationOptions({
     timeout: 60000,
-    allowCredentials: user.devices.map(dev => ({
+    allowCredentials: devices.map(dev => ({
       id: dev.credentialID,
       type: 'public-key',
       transports: dev.transports
     })),
     userVerification: 'required',
     rpID
-  };
-
-  const options = await generateAuthenticationOptions(opts);
-
-  /**
-   * The server needs to temporarily remember this value for verification, so don't lose it until
-   * after you verify an authenticator response.
-   */
-  req.session.currentChallenge = options.challenge;
+  });
 
   return res.send(options);
 };
 
 const registerUser = async (req, res) => {
-  const { expectedChallenge, ...body } = req.body;
+  const { expectedChallenge, userId, ...body } = req.body;
 
-  const user = inMemoryUserDeviceDB[loggedInUserId];
+  const user = inMemoryUserDeviceDB[userId];
 
-  console.log('body', body);
-  console.log('user', user);
-  console.log('expectedChallenge', expectedChallenge);
+  const { devices } = user;
+
+  // // Query for user from firebase
+  // const userRef = doc(db, 'users', userId);
+  // const usersData = await getDoc(userRef);
+
+  // const user = usersData.data();
+
+  // const devices = JSON.parse(user.devices);
+
+  try {
+    const verification = await verifyRegistrationResponse({
+      response: body,
+      expectedChallenge: `${expectedChallenge}`,
+      expectedOrigin,
+      expectedRPID: rpID,
+      requireUserVerification: true
+    });
+
+    const { verified, registrationInfo } = verification;
+
+    // NOTE :: devices must store credentialID in Uint8Array format else will break
+
+    if (!isUndefined(verified) && !isUndefined(registrationInfo)) {
+      const { credentialPublicKey, credentialID, counter } = registrationInfo;
+
+      const existingDevice = devices.find(device =>
+        isoUint8Array.areEqual(device.credentialID, credentialID)
+      );
+
+      // const existingDevice = devices.find(device => {
+      //   console.log(device.credentialID);
+      //   device.credentialID === credentialID.toString();
+      // });
+
+      if (!existingDevice) {
+        /**
+         * Add the returned device to the user's list of devices
+         */
+        const newDevice = {
+          credentialPublicKey,
+          credentialID,
+          // credentialID: credentialID.toString(),
+          counter,
+          transports: body.response.transports
+        };
+
+        devices.push(newDevice);
+      }
+    }
+
+    // // Update devices for user in firebase
+    // const updatedUser = { ...user };
+    // updatedUser.devices = JSON.stringify(devices);
+
+    // // Update in firebase
+    // await setDoc(userRef, updatedUser);
+
+    return res.send({ verified });
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send({ error: error.message });
+  }
+};
+
+const authenticateUser = async (req, res) => {
+  const { expectedChallenge, userId, ...body } = req.body;
+
+  // Query for user from firebase
+  // const usersData = await getDoc(doc(db, 'users', userId));
+
+  // const user = usersData.data();
+
+  // const devices = JSON.parse(user.devices);
+
+  const user = inMemoryUserDeviceDB[userId];
+
+  const { devices } = user;
+
+  let dbAuthenticator;
+  const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
+
+  // "Query the DB" here for an authenticator matching `credentialID`
+  for (const dev of devices) {
+    if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
+      dbAuthenticator = dev;
+      break;
+    }
+  }
+
+  console.log('dbAuthenticator', dbAuthenticator);
+
+  if (isUndefined(dbAuthenticator)) {
+    return res
+      .status(400)
+      .send({ error: { message: 'Authenticator is not registered with this site' } });
+  }
 
   let verification;
   try {
@@ -134,95 +232,30 @@ const registerUser = async (req, res) => {
       expectedChallenge: `${expectedChallenge}`,
       expectedOrigin,
       expectedRPID: rpID,
+      authenticator: dbAuthenticator,
       requireUserVerification: true
     };
-    verification = await verifyRegistrationResponse(opts);
-
-    console.log('verification', verification);
+    verification = await verifyAuthenticationResponse(opts);
   } catch (error) {
     console.error(error);
     return res.status(400).send({ error: error.message });
   }
 
-  const { verified, registrationInfo } = verification;
+  // console.log('verification', verification);
 
-  if (verified && registrationInfo) {
-    const { credentialPublicKey, credentialID, counter } = registrationInfo;
+  const { verified, authenticationInfo } = verification;
 
-    const existingDevice = user.devices.find(device =>
-      isoUint8Array.areEqual(device.credentialID, credentialID)
-    );
-
-    if (!existingDevice) {
-      /**
-       * Add the returned device to the user's list of devices
-       */
-      const newDevice = {
-        credentialPublicKey,
-        credentialID,
-        counter,
-        transports: body.response.transports
-      };
-      user.devices.push(newDevice);
-    }
+  if (verified) {
+    // Update the authenticator's counter in the DB to the newest count in the authentication
+    dbAuthenticator.counter = authenticationInfo.newCounter;
   }
-
-  req.session.currentChallenge = undefined;
 
   return res.send({ verified });
 };
 
-// app.post('/verify-authentication', async (req, res) => {
-//   const body = req.body;
-
-//   const user = inMemoryUserDeviceDB[loggedInUserId];
-
-//   const expectedChallenge = req.session.currentChallenge;
-
-//   let dbAuthenticator;
-//   const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
-//   // "Query the DB" here for an authenticator matching `credentialID`
-//   for (const dev of user.devices) {
-//     if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
-//       dbAuthenticator = dev;
-//       break;
-//     }
-//   }
-
-//   if (!dbAuthenticator) {
-//     return res.status(400).send({ error: 'Authenticator is not registered with this site' });
-//   }
-
-//   let verification;
-//   try {
-//     const opts = {
-//       response: body,
-//       expectedChallenge: `${expectedChallenge}`,
-//       expectedOrigin,
-//       expectedRPID: rpID,
-//       authenticator: dbAuthenticator,
-//       requireUserVerification: true
-//     };
-//     verification = await verifyAuthenticationResponse(opts);
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(400).send({ error: error.message });
-//   }
-
-//   const { verified, authenticationInfo } = verification;
-
-//   if (verified) {
-//     // Update the authenticator's counter in the DB to the newest count in the authentication
-//     dbAuthenticator.counter = authenticationInfo.newCounter;
-//   }
-
-//   req.session.currentChallenge = undefined;
-
-//   res.send({ verified });
-// });
-
 export default {
   generateRegistration,
   generateAuthentication,
-  registerUser
+  registerUser,
+  authenticateUser
 };
