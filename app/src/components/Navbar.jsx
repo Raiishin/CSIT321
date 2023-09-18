@@ -10,8 +10,7 @@ const Navbar = props => {
   const ClickableLink = ({ link, text }) => (
     <a
       className="text-xs m-1 md:m-4 lg:m-4 cursor-pointer text-brown"
-      onClick={() => navigate(link)}
-    >
+      onClick={() => navigate(link)}>
       {text}
     </a>
   );
