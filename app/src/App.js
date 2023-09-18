@@ -1,6 +1,6 @@
-import Navbar from './components/Navbar';
-import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import React, { useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import {
   generateRegistration,
   generateAuthentication,
@@ -8,14 +8,18 @@ import {
   verifyAuthentication
 } from './api/user';
 
-const userId = 'dOan3fY4B2BZRbTxdMgZ';
-import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
 import Home from './components/Home';
 import Promotions from './components/Promotions';
+
+import useGlobalStore from './store/globalStore';
 
 const App = () => {
   const [registrationStatus, setRegistrationStatus] = useState('blank');
   const [authenticationStatus, setAuthenticationStatus] = useState('blank');
+
+  const userId = useGlobalStore(state => state.userId);
+  // const userId = 'dOan3fY4B2BZRbTxdMgZ';
 
   const attemptRegistration = async () => {
     const generatedRegistration = await generateRegistration(userId);
@@ -87,21 +91,27 @@ const App = () => {
     <div className="App">
       <Navbar />
 
-      <button onClick={attemptRegistration}>Hello click me</button>
-      <div>Registration Status: {registrationStatus}</div>
+      <div className="flex flex-col gap-4">
+        <div>
+          <button onClick={attemptRegistration}>Hello click me</button>
+          <div>Registration Status: {registrationStatus}</div>
+        </div>
 
-      <button onClick={attemptAuthentication}>Hello click me</button>
-      <div>Authentication Status: {authenticationStatus}</div>
+        <div>
+          <button onClick={attemptAuthentication}>Hello click me</button>
+          <div>Authentication Status: {authenticationStatus}</div>
+        </div>
+        <div>
+          <button onClick={() => useGlobalStore.setState({ userId: 1 })}>Hello click me</button>
+          <div>State: {userId}</div>
+        </div>
+      </div>
 
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/main" element={<Home />} />
         <Route path="/profile" element={<Home />} />
         <Route path="/promotions" element={<Promotions />} />
-        <Route path="/login" element={<Home />} />
-        <Route path="/register" element={<Home />} />
-        <Route path="/mark" element={<Home />} />
-        <Route path="/view-timetable" element={<Home />} />
       </Routes>
     </div>
   );
