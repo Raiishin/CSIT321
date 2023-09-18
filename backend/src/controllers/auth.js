@@ -18,7 +18,7 @@ const db = getFirestore(app);
 
 dotenv.config();
 
-const { expectedOrigin, rpID } = config;
+const { expectedOrigin, rpID } = process.env;
 
 /**
  * 2FA and Passwordless WebAuthn flows expect you to be able to uniquely identify the user that

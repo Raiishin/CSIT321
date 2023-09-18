@@ -6,11 +6,8 @@ import AuthController from './src/controllers/auth.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
-import config from './src/config/index.js';
 
 dotenv.config();
-
-const { rpID } = config;
 
 const app = express();
 const port = 5001;
@@ -19,7 +16,7 @@ app.use(cors());
 
 app.use(express.json());
 
-const { ENABLE_HTTPS } = process.env;
+const { ENABLE_HTTPS, rpID } = process.env;
 
 // if (ENABLE_HTTPS) {
 //   const host = '0.0.0.0';
