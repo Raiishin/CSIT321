@@ -1,0 +1,14 @@
+{
+  "name": "csit321",
+  "version": "1.0.0",
+  "description": "This repository will be the main product that we will be designing and developing for our FYP project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=16"
+  }
+}
