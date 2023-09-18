@@ -1,41 +1,43 @@
-// import config from '../config/index';
-// import { saltPassword } from '../library/index.js';
+import config from '../config/index';
 
-// export const loginUser = async (email, password) => {
-//   const saltedPassword = saltPassword(password);
+export const generateRegistration = async userId => {
+  const response = await fetch(`${config.backendEndpoint}/generate/registration?userId=${userId}`);
 
-//   const response = await fetch(
-//     `${config.backendEndpoint}/user?email=${email}&password=${saltedPassword}`
-//   );
-//   const responseJSON = await response.json();
+  const responseJSON = await response.json();
 
-//   return responseJSON;
-// };
+  return responseJSON;
+};
 
-// export const createUser = async (name, email, password, phoneNumber) => {
-//   const saltedPassword = saltPassword(password);
+export const generateAuthentication = async userId => {
+  const response = await fetch(
+    `${config.backendEndpoint}/generate/authentication?userId=${userId}`
+  );
 
-//   const response = await fetch(`${config.backendEndpoint}/createUser`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({ name, email, password: saltedPassword, phoneNumber })
-//   });
+  const responseJSON = await response.json();
 
-//   const responseJSON = await response.json();
+  return responseJSON;
+};
 
-//   return responseJSON;
-// };
+export const verifyRegistration = async body => {
+  const response = await fetch(`${config.backendEndpoint}/verify/registration`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body
+  });
 
-// export const updateUser = async (id, password, phoneNumber) => {
-//   const saltedPassword = saltPassword(password);
+  const responseJSON = await response.json();
 
-//   const response = await fetch(`${config.backendEndpoint}/updateUser`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify({ id, password: saltedPassword, phoneNumber })
-//   });
+  return responseJSON;
+};
 
-//   const responseJSON = await response.json();
+export const verifyAuthentication = async body => {
+  const response = await fetch(`${config.backendEndpoint}/verify/authentication`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body
+  });
 
-//   return responseJSON;
-// };
+  const responseJSON = await response.json();
+
+  return responseJSON;
+};
