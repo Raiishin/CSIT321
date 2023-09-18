@@ -25,6 +25,9 @@ import { isUndefined } from 'lodash-es';
 const app = initializeApp(config.firebaseConfig);
 const db = getFirestore(app);
 const users = collection(db, 'users');
+const modules = collection(db, 'modules');
+const classes = collection(db, 'classes');
+const attendance_logs = collection(db, 'attendance_logs');
 
 const index = async (req, res) => {
   const usersSnapshot = await getDocs(users);
@@ -316,8 +319,7 @@ const login = async (req, res) => {
   }
 };
 
-const resetPassword = async(req,res) =>{
-
+const resetPassword = async (req, res) => {
   let { email, password } = req.body;
 
   try {
@@ -336,7 +338,6 @@ const resetPassword = async(req,res) =>{
 
     // Update password if provided and not empty
     if (!isUndefined(password) && password !== '') {
-      
       bcrypt.compare(password, userData.password, async (err, result) => {
         if (err) {
           console.error('Error comparing passwords:', err);
@@ -357,15 +358,14 @@ const resetPassword = async(req,res) =>{
           return res.json({ success: true, message: 'Password remains unchanged' });
         }
       });
-    }else{
+    } else {
       // Password provided is empty return error message.
       return res.json({ success: false, message: 'Password cannot be empty' });
     }
-    
-  }catch (error) {
+  } catch (error) {
     return res.json({ success: false, message: 'Password reset failed' });
   }
-}
+};
 
 export default {
   index,
@@ -374,5 +374,5 @@ export default {
   update,
   destroy,
   login,
-  resetPassword,
+  resetPassword
 };

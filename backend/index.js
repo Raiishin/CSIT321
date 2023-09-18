@@ -43,7 +43,7 @@ router.get('/users', UserController.index);
 router.post('/user/create', UserController.create);
 router.post('/user/update', UserController.update);
 router.post('/user/login', UserController.login);
-router.post('/user/resetPassword',UserController.resetPassword);
+router.post('/user/resetPassword', UserController.resetPassword);
 router.delete('/user', UserController.destroy);
 
 //Class Endpoint
