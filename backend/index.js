@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import UserController from './src/controllers/user.js';
 import AuthController from './src/controllers/auth.js';
+import ClassController from './src/controllers/classes.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
@@ -40,6 +41,7 @@ const router = express.Router();
 router.get('/users', UserController.index);
 router.get('/user', UserController.view);
 
+router.get('/class', ClassController.index);
 // router.post('/createUser', UserController.create);
 // router.post('/updateUser', UserController.update);
 
