@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import Navbar from './components/Navbar';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import React, { useState } from 'react';
@@ -10,6 +9,9 @@ import {
 } from './api/user';
 
 const userId = 'dOan3fY4B2BZRbTxdMgZ';
+import { Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import Promotions from './components/Promotions';
 
 const App = () => {
   const [registrationStatus, setRegistrationStatus] = useState('blank');
@@ -84,26 +86,23 @@ const App = () => {
   return (
     <div className="App">
       <Navbar />
-      <header className="App-header">
-        <img src={logo} className="h-16" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
 
       <button onClick={attemptRegistration}>Hello click me</button>
       <div>Registration Status: {registrationStatus}</div>
 
       <button onClick={attemptAuthentication}>Hello click me</button>
       <div>Authentication Status: {authenticationStatus}</div>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/main" element={<Home />} />
+        <Route path="/profile" element={<Home />} />
+        <Route path="/promotions" element={<Promotions />} />
+        <Route path="/login" element={<Home />} />
+        <Route path="/register" element={<Home />} />
+        <Route path="/mark" element={<Home />} />
+        <Route path="/view-timetable" element={<Home />} />
+      </Routes>
     </div>
   );
 };
