@@ -15,5 +15,5 @@ export default {
    * RP ID represents the "scope" of websites on which a authenticator should be usable. The Origin
    * represents the expected URL from which registration or authentication occurs.
    */
-  rpID: 'csit321-project-backend.onrender' // Dev: localhost
+  rpID: 'csit321-project-backend.onrender.com' // Dev: localhost
 };
