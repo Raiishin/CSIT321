@@ -1,6 +1,16 @@
 // User Controller
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, getDocs } from 'firebase/firestore/lite';
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  addDoc,
+  query,
+  where,
+  setDoc,
+  doc,
+  getDoc
+} from 'firebase/firestore/lite';
 import config from '../config/index.js';
 
 // Initialize Firebase
@@ -15,50 +25,59 @@ const index = async (req, res) => {
   return res.json({ usersData });
 };
 
-// const view = async (req, res) => {
-//   const { password, email } = req.query;
+const view = async (req, res) => {
+  const { name } = req.query;
 
-//   const searchQuery = query(users, where('password', '==', password), where('email', '==', email));
-//   const usersData = await getDocs(searchQuery);
+  const searchQuery = query(users, where('name', '==', name));
+  const usersData = await getDocs(searchQuery);
 
-//   let returnObject;
+  let user;
 
-//   // Error handling if there are no results
-//   if (usersData.docs.length == 0) {
-//     return res.json({ message: 'Incorrect password or no such user exists' });
-//   }
+  usersData.forEach(item => (user = item.data()));
 
-//   usersData.forEach(item => {
-//     const data = item.data();
+  return res.json({ user });
+};
 
-//     if (data.type === userTypeEnum.CUSTOMER) {
-//       const customer = new Customer(
-//         item.id,
-//         data.name,
-//         data.email,
-//         data.phoneNumber,
-//         data.walletBalance,
-//         data.loyaltyPoints
-//       );
+const createUser = async (req, res) => {
+  await addDoc(users, {
+    name: 'Andy',
+    password: '123456',
+    email: 'andy@gmail.com',
+    type: '0',
+    is_active: true,
+    modules: ['CSCI376', 'CSCI361']
+  });
 
-//       returnObject = customer;
-//     } else if (data.type === userTypeEnum.STAFF) {
-//       const staff = new Staff(item.id, data.name, data.email, data.phoneNumber);
-//       returnObject = staff;
-//     } else if (data.type === userTypeEnum.MANAGEMENT) {
-//       const management = new Management(item.id, data.name, data.email, data.phoneNumber);
-//       returnObject = management;
-//     } else if (data.type === userTypeEnum.ADMIN) {
-//       const admin = new Admin(item.id, data.name, data.email, data.phoneNumber);
-//       returnObject = admin;
-//     } else {
-//       const user = new User(item.id, data.name, data.email, data.phoneNumber);
-//       returnObject = user;
-//     }
-//   });
+  await addDoc(users, {
+    name: 'Sionggo Japit',
+    password: '123456',
+    email: 'sionggojapit@gmail.com',
+    type: '1',
+    is_active: true,
+    modules: ['CSCI368,CSCI376']
+  });
+};
 
-//   return res.json(returnObject);
-// };
+const createModules = async (req, res) => {
+  const modules = collection(db, 'modules');
+
+  await addDoc(modules, {
+    module_id: 'CSCI368',
+    name: 'Network Security'
+  });
+};
+
+const createClasses = async (req, res) => {
+  const classes = collection(db, 'classes');
+
+  await addDoc(classes, {
+    module_id: 'CSCI368',
+    date: '2023-01-04',
+    start_time: '08:30',
+    end_time: '11:30',
+    user_id: 'EnFVTWL9U1gfzyoPCmaE'
+  });
+};
 
 // const create = async (req, res) => {
 //   const { name, password, email, phoneNumber } = req.body;
@@ -156,8 +175,11 @@ const index = async (req, res) => {
 // };
 
 export default {
-  index
-  //   view,
+  index,
+  view,
+  createUser,
+  createModules,
+  createClasses
   //   create,
   //   update
 };
