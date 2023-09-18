@@ -38,8 +38,13 @@ http.createServer(app).listen(port, () => console.log('Application Started at: '
 const router = express.Router();
 
 router.get('/users', UserController.index);
+router.get('/user', UserController.view);
+router.post('/createuser', UserController.createuser);
+router.post('/createlecturer', UserController.createlecturer);
+router.post('/createclasses', UserController.createclasses);
+router.post('/createmodules', UserController.createmodules);
 // router.get('/user', UserController.view);
-// router.post('/createUser', UserController.create);
+//router.post('/createUser', UserController.create);
 // router.post('/updateUser', UserController.update);
 
 router.get('/generate/registration', AuthController.generateRegistration);
