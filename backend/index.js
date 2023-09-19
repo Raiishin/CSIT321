@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 import UserController from './src/controllers/user.js';
 import ClassController from './src/controllers/class.js';
 import AuthController from './src/controllers/auth.js';
-import ClassController from './src/controllers/classes.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
