@@ -41,7 +41,7 @@ const router = express.Router();
 router.get('/users', UserController.index);
 router.get('/user', UserController.view);
 
-router.get('/class', ClassController.index);
+router.get('/classes', ClassController.index);
 // router.post('/createUser', UserController.create);
 // router.post('/updateUser', UserController.update);
 

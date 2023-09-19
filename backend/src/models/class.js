@@ -1,25 +1,25 @@
 class Class {
-  constructor(date, start_time, end_time, lecturer_name) {
+  constructor(date, startTime, endTime, lecturerName) {
     this.date = date;
-    this.start_time = start_time;
-    this.end_time = end_time;
-    this.lecturer_name = lecturer_name;
+    this.startTime = startTime;
+    this.endTime = endTime;
+    this.lecturerName = lecturerName;
   }
 
   static get date() {
     return this.date;
   }
 
-  static get start_time() {
-    return this.start_time;
+  static get startTime() {
+    return this.startTime;
   }
 
-  static get end_time() {
-    return this.end_time;
+  static get endTime() {
+    return this.endTime;
   }
 
-  static get lecturer_name() {
-    return this.lecturer_name;
+  static get lecturerName() {
+    return this.lecturerName;
   }
 }
 
