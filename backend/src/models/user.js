@@ -1,10 +1,12 @@
 class User {
-  constructor(id, name, email, phoneNumber, type) {
+  constructor(id, name, password, email, type, is_active, modules) {
     this.id = id;
     this.name = name;
+    this.password = password;
     this.email = email;
-    this.phoneNumber = phoneNumber;
-    this.type = type;
+    this.type = type
+    this.is_active = is_active
+    this.modules = modules;
   }
 
   static get id() {
@@ -15,6 +17,10 @@ class User {
     return this.name;
   }
 
+  static get password() {
+    return this.password;
+  }
+
   static get email() {
     return this.email;
   }
@@ -23,9 +29,14 @@ class User {
     return this.type;
   }
 
-  static get phoneNumber() {
-    return this.phoneNumber;
+  static get is_active() {
+    return this.is_active;
   }
+
+  static get modules() {
+    return this.modules;
+  }
+
 }
 
 export default User;
