@@ -21,115 +21,103 @@ const modules = collection(db, 'modules');
 const users = collection(db, 'users');
 
 const index = async (req, res) => {
-  const { userId } = req.query;
+
+  const {userId} = req.query;
+
+  // Check if user_id is undefined, empty, or contains only whitespace
+  if (!userId || typeof userId !== 'string' || userId.trim() === '') {
+    console.log("Invalid userId provided.");
+    return res.json({ message: 'Invalid userId provided' });
+  }
 
   try {
+    // Get user data
     const userDocRef = doc(users, userId);
-
     const userDocSnapshot = await getDoc(userDocRef);
-
+  
+    // Check if the user document exists
     if (!userDocSnapshot.exists()) {
       console.log(`User with userId ${userId} not found.`);
-      return res.json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
-
+  
+    // Get the user data
     const userData = userDocSnapshot.data();
+  
+    // Retrieve Module IDs
+    const moduleIds = userData.modules;
 
-    // Retrieve classes from user
-    const userClasses = userData.classes;
+    // Retrieve Modules data
+    const modulesData = [];
 
-    // Parse the userClasses into an array of class IDs
-    const userClassesArray = userClasses.replace(/[{}]/g, '').split(',');
+    for (const moduleId of moduleIds) {
+      const moduleDocRef = doc(modules, moduleId);
+      const moduleDocSnapshot = await getDoc(moduleDocRef);
 
-    // Fetch the classes associated with the user's class IDs
-    const classesData = [];
-
-    for (const classId of userClassesArray) {
-      // Query the classes collection based on classId
-      const classQuery = query(classes, where('class_id', '==', classId.trim()));
-      const classSnapshot = await getDocs(classQuery);
-
-      const classData = classSnapshot.docs.map(doc => doc.data());
-
-      classesData.push(...classData);
-    }
-
-    // Fetch module names for each class
-    for (const classObj of classesData) {
-      const module_id = classObj.modules_id;
-      // Create a query with 'where' condition for 'module_id'
-      const searchQuery = query(modules, where('modules_id', '==', module_id));
-      const modulesData = await getDocs(searchQuery);
-
-      if (!modulesData.empty) {
-        // Access the 'name' field
-        classObj.module_name = modulesData.docs[0].data().name;
+      if (moduleDocSnapshot.exists()) {
+        modulesData.push({ id: moduleId, ...moduleDocSnapshot.data() });
       } else {
-        classObj.module_name = null; // Module not found
+        console.log(`Module with ID ${moduleId} not found.`);
       }
     }
 
-    // Fetch Lecture names for each class
-    for (const classObj of classesData) {
-      const userId = classObj.userId;
-      const userDocRef = doc(users, userId);
-      const userData = await getDoc(userDocRef);
+      // Initialize an object to group classes by moduleId and moduleName
+      const classesByModule = {};
 
-      if (userData.exists()) {
-        // Access the data directly using .data()
-        classObj.lecturer_name = userData.data().name;
+      // Fetch classes for each module
+      for (const moduleId of moduleIds) {
+        const classesQuery = query(classes, where('module_id', '==', moduleId));
+        const classesSnapshot = await getDocs(classesQuery);
+        const moduleClassesData = classesSnapshot.docs.map(doc => doc.data());
 
-        // Initialize the classes property as an empty array
-        classObj.classes = [];
+        // Get the module name or set it to null if not found
+        const moduleName = modulesData.find(module => module.id === moduleId)?.name || null;
 
-        // Create a new instance of the Classes class and store it in the array
-        const classInstance = new Class(
-          classObj.date,
-          classObj.start_time,
-          classObj.end_time,
-          classObj.lecturer_name
-        );
+        // Fetch Lecture names for each class and add them to classesByModule
+        for (const classData of moduleClassesData) {
+          const userDocRef = doc(users, classData.user_id); // Use the user_id field from classData
+          const userDocSnapshot = await getDoc(userDocRef);
 
-        classObj.classes.push(classInstance);
-      } else {
-        classObj.lecturer_name = null;
+          if (userDocSnapshot.exists()) {
+            const lecturer_name = userDocSnapshot.data().name;
+
+            // Create a new instance of the Classes class for each class
+            const classObj = new Class(
+              classData.date,
+              classData.start_time,
+              classData.end_time,
+              lecturer_name
+            );
+
+            // Initialize the classes array if not already present
+            if (!classesByModule[moduleId]) {
+              classesByModule[moduleId] = {
+                moduleId,
+                moduleName,
+                classes: [],
+              };
+            }
+
+            // Push the classObj to the classes array
+            classesByModule[moduleId].classes.push(classObj);
+          } else {
+            console.log(`Lecturer with userId ${classData.user_id} not found.`);
+          }
+        }
       }
-    }
-    // Create a Map to group classes by module
-    const classesByModule = new Map();
 
-    // Group classes by module
-    for (const classInstance of classesData) {
-      const module_id = classInstance.modules_id;
-      if (!classesByModule.has(module_id)) {
-        classesByModule.set(module_id, {
-          modules_id: module_id,
-          module_name: classInstance.module_name,
-          classes: []
-        });
-      }
-      classesByModule.get(module_id).classes.push({
-        date: classInstance.date,
-        start_time: classInstance.start_time,
-        end_time: classInstance.end_time,
-        lecturer_name: classInstance.lecturer_name
-      });
+      // Convert the grouped object to an array
+      const classesData = Object.values(classesByModule);
+
+      // Return the classes data as a JSON response
+      return res.status(200).json({ Data: classesData });
+    } catch (error) {
+      console.error(`Error querying user data: ${error.message}`);
+      return res.status(500).json({ error: '500 Internal server error' });
     }
 
-    // Convert the Map to an array of objects
-    const resultData = Array.from(classesByModule.values());
-
-    // Respond with the modified data structure
-    return res.json({ data: resultData });
-  } catch (error) {
-    console.error(`Error querying user or classes: ${error.message}`);
-    return res.status(500).json({ error: '500 Internal server error' });
-  }
 };
 
 export default {
   index
-  //   view,
-  //   create,
-  //   update
 };
