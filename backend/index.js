@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import UserController from './src/controllers/user.js';
-import ClassController from './src/controllers/classes.js'
+import ClassController from './src/controllers/class.js';
 import AuthController from './src/controllers/auth.js';
 import https from 'https';
 import http from 'http';
@@ -39,7 +39,9 @@ http.createServer(app).listen(port, () => console.log('Application Started at: '
 const router = express.Router();
 
 router.get('/users', UserController.index);
-router.get('/class', ClassController.index);
+
+router.get('/classes', ClassController.index);
+
 // router.post('/createUser', UserController.create);
 // router.post('/updateUser', UserController.update);
 
