@@ -1,6 +1,5 @@
 export default {
-  CUSTOMER: 1,
-  STAFF: 2,
-  MANAGEMENT: 3,
-  ADMIN: 4
+  STUDENT: 0,
+  LECTURER: 1,
+  ADMIN: 2
 };
