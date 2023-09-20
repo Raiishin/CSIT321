@@ -6,7 +6,7 @@ import {
   generateAuthentication,
   verifyRegistration,
   verifyAuthentication
-} from './api/user';
+} from './api/auth';
 
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -15,6 +15,8 @@ import Login from './components/Login';
 import Contact from './components/Contact';
 import FAQ from './components/FAQ';
 import Dashboard from './components/Dashboard';
+import Attendance from './components/Attendance';
+import Timetable from './components/Timetable';
 
 import useGlobalStore from './store/globalStore';
 import { isUndefined } from 'lodash';
@@ -118,6 +120,9 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/faq" element={<FAQ />} />
+
+          <Route path="/timetable" element={<Timetable />} />
+          <Route path="/attendance" element={<Attendance />} />
         </Routes>
       </div>
     </div>
