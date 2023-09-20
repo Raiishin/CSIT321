@@ -1,11 +1,11 @@
 class User {
-  constructor(id, name, password, email, type, is_active, modules) {
+  constructor(id, name, password, email, type, isActive, modules) {
     this.id = id;
     this.name = name;
     this.password = password;
     this.email = email;
     this.type = type
-    this.is_active = is_active
+    this.isActive = isActive
     this.modules = modules;
   }
 
@@ -30,11 +30,11 @@ class User {
   }
 
   static get is_active() {
-    return this.is_active;
+    return this.isActive;
   }
 
   static get modules() {
-    return this.modules;
+    return this.type;
   }
 
 }

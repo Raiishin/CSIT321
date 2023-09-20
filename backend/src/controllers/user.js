@@ -14,6 +14,11 @@ import {
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import User from '../models/user.js';
+import Student from '../models/student.js'
+import Lecturer from '../models/lecturer.js'
+import Admin from '../models/admin.js'
+import userTypeEnum from '../constants/userTypeEnum.js'
+import { isUndefined } from 'lodash-es';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -39,7 +44,7 @@ const view = async (req, res) => {
     const user = userDataRef.data();
     return res.json({ user });
   } else {
-    return res.status(404).json({ message: 'User not found' });
+    return res.json({ message: 'User not found' });
   }
 };
 
@@ -84,22 +89,29 @@ const create = async (req, res) => {
   const userRef = doc(db, 'users', resp.id);
   const userData = await getDoc(userRef);
 
+  let returnObject;
+
   // Check if the user exists (userData is not null)
   if (userData.exists()) {
     const data = userData.data();
+    console.log("DataType: " + data.type);
+    
+    if (data.type === userTypeEnum.STUDENT) {
+      // Create a Student object with the retrieved data
+      returnObject = new Student(resp.id, data.name, data.email, data.password, data.type, data.is_active, data.modules);
+    } else if (data.type === userTypeEnum.LECTURER) {
+      // Create a lecturer object with the retrieved data
+      returnObject = new Lecturer(resp.id, data.name, data.email, data.password, data.type, data.is_active, data.modules);
+    } else if (data.type === userTypeEnum.ADMIN) {
+      // Create an Admin object with the retrieved data
+      returnObject = new Admin(resp.id, data.name, data.email, data.password, data.type, data.is_active, data.modules);
+    } else {
+      // Create a User object with the retrieved data
+      returnObject = new User(resp.id, data.name, data.email, data.password, data.type, data.is_active, data.modules);
+    }
 
-    // Create a user object with the retrieved data
-    const user = new User(
-      resp.id,
-      data.name,
-      data.email,
-      data.password,
-      data.type,
-      data.is_active,
-      data.modules
-    );
+    return res.json(returnObject);
 
-    return res.json(user);
   } else {
     return res.json({ message: 'User not found after creation' });
   }
@@ -118,38 +130,56 @@ const update = async (req, res) => {
     const updatedUser = { ...userDataRef.data() };
 
     // Update name if provided and not empty
-    if (name !== undefined && name !== '') {
+    if (name !== isUndefined && name !== '') {
       updatedUser.name = name;
     }
 
     // Update password if provided and not empty
-    if (password !== undefined && password !== '') {
+    if (password !== isUndefined && password !== '') {
       updatedUser.password = password;
     }
 
     // Update email if provided and not empty
-    if (email !== undefined && email !== '') {
+    if (email !== isUndefined && email !== '') {
       updatedUser.email = email;
     }
 
     // Update is_active if provided and not empty
-    if (is_active !== undefined) {
+    if (is_active !== isUndefined) {
       updatedUser.is_active = is_active;
     }
 
     // Update modules if provided and not empty
-    if (modules !== undefined) {
+    if (modules !== isUndefined) {
       updatedUser.modules = modules;
     }
 
     // Update in Firebase
     await setDoc(userRef, updatedUser);
 
-    return res.json({ message: 'User has been updated successfully!' });
+    // Retrieve the updated user
+    const userData = await getDoc(userRef);
+
+    let returnObject;
+
+    if (userData.type === userTypeEnum.STUDENT) {
+      // Create a Student object with the retrieved data
+      returnObject = new Student(id, userData.name, userData.email, userData.password, userData.type, userData.is_active, userData.modules);
+    } else if (data.type === userTypeEnum.LECTURER) {
+      // Create a lecturer object with the retrieved data
+      returnObject = new Lecturer(id, userData.name, userData.email, userData.password, userData.type, userData.is_active, userData.modules);
+    } else if (data.type === userTypeEnum.ADMIN) {
+      // Create an Admin object with the retrieved data
+      returnObject = new Admin(id, userData.name, userData.email, userData.password, userData.type, userData.is_active, userData.modules);
+    } else {
+      // Create a User object with the retrieved data
+      returnObject = new User(id, userData.name, userData.email, userData.password, userData.type, userData.is_active, userData.modules);
+    }
+    return res.json(returnObject);
 
   }catch (error) {
     console.error('Error updating user:', error);
-    return res.status(500).json({ message: 'User update failed!' });
+    return res.json({ message: 'User update failed!' });
   }
 
 };
