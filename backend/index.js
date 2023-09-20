@@ -42,7 +42,7 @@ const router = express.Router();
 router.get('/users', UserController.index);
 router.post('/user/create', UserController.create);
 router.post('/user/update', UserController.update);
-router.delete('/user', UserController.deleteUser);
+router.delete('/user', UserController.destroy);
 
 //Class Endpoint
 router.get('/classes', ClassController.index);
