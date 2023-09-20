@@ -260,10 +260,51 @@ const destroy = async (req, res) => {
   }
 };
 
+const login = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // Get current user information via email
+    const searchQuery = query(users, where('email', '==', email));
+    const usersData = await getDocs(searchQuery);
+
+    // User not found
+    if (usersData.docs.length === 0) {
+      return res.json({ message: 'No user found' });
+    }
+
+    for (let i = 0; i < usersData.docs.length; i++) {
+      const userDoc = usersData.docs[i];
+      const userData = userDoc.data();
+
+      // Check if the user is active
+      if (userData.is_active) {
+        if (!isUndefined(password) && password !== '') {
+          // Compare the provided password with the stored hash
+
+          // Vanilla password comparison
+          if (password === userData.password) {
+            // Passwords match, proceed with login
+            return res.json({ success: true, message: 'Login successful' });
+          } else {
+            // Passwords do not match
+            return res.json({ success: false, message: 'Incorrect password' });
+          }
+        }
+      } else {
+        return res.json({ message: 'User is not active' });
+      }
+    }
+  } catch (error) {
+    return res.json({ message: 'Internal server error' });
+  }
+};
+
 export default {
   index,
   view,
   create,
   update,
-  destroy
+  destroy,
+  login
 };
