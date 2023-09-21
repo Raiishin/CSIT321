@@ -1,4 +1,5 @@
 // Classes Controller
+import { isAfter } from 'date-fns';
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore,
@@ -70,24 +71,45 @@ const index = async (req, res) => {
             classData.date,
             classData.start_time,
             classData.end_time,
-            lecturerName
+            lecturerName,
+            classData.period,
+            classData.type,
+            classData.venue
           );
 
           // Initialize the classes array if not already present
           if (!classesByModule.hasOwnProperty(moduleId)) {
-            classesByModule[moduleId] = { moduleId, moduleName, classes: [classObj] };
+            classesByModule[moduleId] = [{ ...classObj, moduleId, moduleName }];
           } else {
             // Push the classObj to the classes array
-            classesByModule[moduleId].classes.push(classObj);
+            classesByModule[moduleId].push({ ...classObj, moduleId, moduleName });
           }
         }
       }
     }
+    const classesByModuleArr = Object.values(classesByModule);
+
+    // For each module, sort according to date then time
+    for (let j = 0; j < classesByModuleArr.length; j++) {
+      classesByModuleArr[j].sort((a, b) => {
+        if (a.date === b.date) {
+          return +a.startTime.substring(0, 2) - +b.startTime.substring(0, 2);
+        } else {
+          const dateStrA = a.date.split('-');
+          const dateStrB = b.date.split('-');
+
+          const dateA = new Date(+dateStrA[0], +dateStrA[1] - 1, +dateStrA[2]);
+          const dateB = new Date(+dateStrB[0], +dateStrB[1] - 1, +dateStrB[2]);
+
+          return isAfter(dateB, dateA) ? -1 : 1;
+        }
+      });
+    }
 
     // Return the classes data as an array
-    return res.status(200).json({ data: Object.values(classesByModule) });
+    return res.json({ data: classesByModuleArr });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    return res.json({ message: error.message });
   }
 };
 
