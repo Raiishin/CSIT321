@@ -1,86 +1,95 @@
-import React, { useEffect, useState } from 'react';
-import { getClasses } from '../api/class';
+import React, { useState } from 'react';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+import {
+  generateRegistration,
+  generateAuthentication,
+  verifyRegistration,
+  verifyAuthentication
+} from '../api/auth';
+import useGlobalStore from '../store/globalStore';
 
 const Attendance = () => {
-  const [attendance, setAttendance] = useState([]);
+  const [registrationStatus, setRegistrationStatus] = useState('blank');
+  const [authenticationStatus, setAuthenticationStatus] = useState('blank');
 
-  // useEffect(() => {
-  //   const initializePageData = async () => {
-  //     const { classesData } = await getClasses();
-  //     setAttendance(classesData);
-  //   };
+  const userId = useGlobalStore(state => state.userId);
 
-  //   initializePageData();
-  // }, []);
+  const attemptRegistration = async () => {
+    const generatedRegistration = await generateRegistration(userId);
+
+    try {
+      // Pass the options to the authenticator and wait for a response
+      const registrationResponse = await startRegistration(generatedRegistration);
+
+      console.log('registrationResponse', registrationResponse);
+      console.log('generatedRegistration', generatedRegistration);
+
+      setRegistrationStatus('registration in progress');
+
+      const verifyRegistrationBody = JSON.stringify({
+        ...registrationResponse,
+        userId,
+        expectedChallenge: generatedRegistration.challenge
+      });
+
+      const verifyRegistrationResponse = await verifyRegistration(verifyRegistrationBody);
+
+      console.log('verifyRegistrationResponse', verifyRegistrationResponse);
+
+      setRegistrationStatus('registration completed');
+    } catch (error) {
+      // Some basic error handling
+      setRegistrationStatus(
+        error.name === 'InvalidStateError'
+          ? 'Error: Authenticator was probably already registered by user'
+          : error.message
+      );
+    }
+  };
+
+  const attemptAuthentication = async () => {
+    const generatedAuthentication = await generateAuthentication(userId);
+
+    try {
+      // Pass the options to the authenticator and wait for a response
+      const authenticationResponse = await startAuthentication(generatedAuthentication);
+
+      console.log('authenticationResponse', authenticationResponse);
+      console.log('generatedAuthentication', generatedAuthentication);
+
+      setAuthenticationStatus('authentication in progress');
+
+      const verifyAuthenticationBody = JSON.stringify({
+        ...authenticationResponse,
+        userId,
+        expectedChallenge: generatedAuthentication.challenge
+      });
+
+      const verifyAuthenticationResponse = await verifyAuthentication(verifyAuthenticationBody);
+
+      console.log('verifyAuthenticationResponse', verifyAuthenticationResponse);
+
+      setAuthenticationStatus(
+        verifyAuthenticationResponse.verified
+          ? 'authentication completed'
+          : verifyAuthenticationResponse.error.message
+      );
+    } catch (error) {
+      // Some basic error handling
+      setAuthenticationStatus(error.message);
+    }
+  };
 
   return (
-    <div className="fixed grid grid-cols-3 pt-9 w-full">
-      {attendance.length !== 0 && <div />}
-
-      <div class="col-span-3 flex justify-center pt-8 bg-zinc-900">
-        <p className="text-[#ccd6f6] text-4xl font-bold">Attendance Rates</p>
+    <div className="flex flex-col gap-4 bg-white">
+      <div>
+        <button onClick={attemptRegistration}>Hello click me</button>
+        <div>Registration Status: {registrationStatus}</div>
       </div>
 
-      <div className="w-full col-span-3 flex pb-20 pt-4 items-center justify-center min-w-[70%]">
-        <table className="m-10 border-collapse  bg-gray-50 border-b-2 border-slate-500 w-full font-sans">
-          <thead class="bg-[#dcdcdc]">
-            <tr>
-              <th class="p-3 text-sm font-semibold tracking-wide text-left">No.</th>
-              <th class="p-3 text-sm font-semibold tracking-wide text-left">Course Module</th>
-              <th class="p-3 text-sm font-semibold tracking-wide text-left">Number of Students</th>
-              <th class="p-3 text-sm font-semibold tracking-wide text-left">Number of Attendees</th>
-              <th class="p-3 text-sm font-semibold tracking-wide text-left">
-                Percentage of Attendees
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            <tr class="bg-white">
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">1</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">CSIT321 - Project</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">324</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">298</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">91.98%</td>
-            </tr>
-            <tr class="bg-[#f5f5f5]">
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">2</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">
-                CSCI317 - Database Performance Tuning
-              </td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">254</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">182</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">71.65%</td>
-            </tr>
-            <tr class="bg-white">
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">3</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">
-                CSCI316 Big Data Mining Techniques and Implementation
-              </td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">365</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">283</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">77.53%</td>
-            </tr>
-            <tr class="bg-[#f5f5f5]">
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">4</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">
-                INFO411 - Data Mining and Knowledge Discovery
-              </td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">324</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">321</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">99.07%</td>
-            </tr>
-            <tr class="bg-white">
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">5</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">
-                CSIT314 - Software Development Methodologies
-              </td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">267</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">196</td>
-              <td class="p-3 text-sm font-semibold tracking-wide text-left">73.41%</td>
-            </tr>
-          </tbody>
-        </table>
+      <div>
+        <button onClick={attemptAuthentication}>Hello click me</button>
+        <div>Authentication Status: {authenticationStatus}</div>
       </div>
     </div>
   );

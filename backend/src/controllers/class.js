@@ -71,7 +71,10 @@ const index = async (req, res) => {
             classData.date,
             classData.start_time,
             classData.end_time,
-            lecturerName
+            lecturerName,
+            classData.period,
+            classData.type,
+            classData.venue
           );
 
           // Initialize the classes array if not already present
