@@ -9,9 +9,16 @@ import {
   where,
   setDoc,
   doc,
-  getDoc
+  getDoc,
+  deleteDoc
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
+import User from '../models/user.js';
+import Student from '../models/student.js';
+import Lecturer from '../models/lecturer.js';
+import Admin from '../models/admin.js';
+import userTypeEnum from '../constants/userTypeEnum.js';
+import { isUndefined } from 'lodash-es';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -26,160 +33,278 @@ const index = async (req, res) => {
 };
 
 const view = async (req, res) => {
-  const { name } = req.query;
+  const { userId } = req.query;
 
-  const searchQuery = query(users, where('name', '==', name));
+  // Get current user information via email
+  const userRef = doc(db, 'users', userId);
+  const userDataRef = await getDoc(userRef);
+
+  return res.json(
+    userDataRef.exists() ? { user: userDataRef.data() } : { message: 'User not found' }
+  );
+};
+
+const create = async (req, res) => {
+  const { name, password, email, type, isActive, modules } = req.body;
+
+  // Validate if user already exists using email
+  const searchQuery = query(users, where('email', '==', email));
   const usersData = await getDocs(searchQuery);
 
-  let user;
+  // Error handling if email already exists
+  if (usersData.docs.length !== 0) {
+    return res.json({ message: 'This email already exists' });
+  }
 
-  usersData.forEach(item => (user = item.data()));
+  const modulesCol = collection(db, 'modules');
 
-  return res.json({ user });
-};
+  // Check if modules exist in the "modules" collection
+  for (const moduleId of modules) {
+    const moduleRef = doc(modulesCol, moduleId);
+    const moduleDoc = await getDoc(moduleRef);
 
-const createUser = async (req, res) => {
-  await addDoc(users, {
-    name: 'Andy',
-    password: '123456',
-    email: 'andy@gmail.com',
-    type: '0',
-    is_active: true,
-    modules: ['CSCI376', 'CSCI361']
+    if (!moduleDoc.exists()) {
+      return res.json({ message: `Module ${moduleId} does not exist` });
+    }
+  }
+
+  // Create new user, default to being a STUDENT
+  const resp = await addDoc(users, {
+    name,
+    password,
+    email,
+    type,
+    is_active: isActive,
+    modules
   });
 
-  await addDoc(users, {
-    name: 'Sionggo Japit',
-    password: '123456',
-    email: 'sionggojapit@gmail.com',
-    type: '1',
-    is_active: true,
-    modules: ['CSCI368,CSCI376']
-  });
+  // Fetch the user data from the newly created user
+  const userRef = doc(db, 'users', resp.id);
+  const userData = await getDoc(userRef);
+
+  let returnObject;
+
+  // Check if the user exists (userData is not null)
+  if (userData.exists()) {
+    const data = userData.data();
+
+    if (data.type === userTypeEnum.STUDENT) {
+      // Create a Student object with the retrieved data
+      returnObject = new Student(
+        resp.id,
+        data.name,
+        data.email,
+        data.password,
+        data.type,
+        data.is_active,
+        data.modules
+      );
+    } else if (data.type === userTypeEnum.LECTURER) {
+      // Create a lecturer object with the retrieved data
+      returnObject = new Lecturer(
+        resp.id,
+        data.name,
+        data.email,
+        data.password,
+        data.type,
+        data.is_active,
+        data.modules
+      );
+    } else if (data.type === userTypeEnum.ADMIN) {
+      // Create an Admin object with the retrieved data
+      returnObject = new Admin(
+        resp.id,
+        data.name,
+        data.email,
+        data.password,
+        data.type,
+        data.is_active,
+        data.modules
+      );
+    } else {
+      // Create a User object with the retrieved data
+      returnObject = new User(
+        resp.id,
+        data.name,
+        data.email,
+        data.password,
+        data.type,
+        data.is_active,
+        data.modules
+      );
+    }
+
+    return res.json(returnObject);
+  } else {
+    return res.json({ message: 'User not found after creation' });
+  }
 };
 
-const createModules = async (req, res) => {
-  const modules = collection(db, 'modules');
+const update = async (req, res) => {
+  const { id, name, password, email, isActive, modules } = req.body;
 
-  await addDoc(modules, {
-    module_id: 'CSCI368',
-    name: 'Network Security'
-  });
+  try {
+    // Get current user information via email
+    const userRef = doc(db, 'users', id);
+    const userDataRef = await getDoc(userRef);
+
+    // Update user information
+    const userData = { ...userDataRef.data() };
+
+    // Update name if provided and not empty
+    if (!isUndefined(name) && name !== '') {
+      userData.name = name;
+    }
+
+    // Update password if provided and not empty
+    if (!isUndefined(password) && password !== '') {
+      userData.password = password;
+    }
+
+    // Update email if provided and not empty
+    if (!isUndefined(email) && email !== '') {
+      userData.email = email;
+    }
+
+    // Update is_active if provided and not empty
+    if (!isUndefined(isActive)) {
+      userData.is_active = isActive;
+    }
+
+    // Update modules if provided and not empty
+    if (!isUndefined(modules)) {
+      userData.modules = modules;
+    }
+
+    // Update in Firebase
+    await setDoc(userRef, userData);
+
+    // Retrieve the updated user
+    const updatedUserData = await getDoc(userRef);
+
+    let returnObject;
+
+    if (updatedUserData.type === userTypeEnum.STUDENT) {
+      // Create a Student object with the retrieved data
+      returnObject = new Student(
+        id,
+        updatedUserData.name,
+        updatedUserData.email,
+        updatedUserData.password,
+        updatedUserData.type,
+        updatedUserData.is_active,
+        updatedUserData.modules
+      );
+    } else if (data.type === userTypeEnum.LECTURER) {
+      // Create a lecturer object with the retrieved data
+      returnObject = new Lecturer(
+        id,
+        updatedUserData.name,
+        updatedUserData.email,
+        updatedUserData.password,
+        updatedUserData.type,
+        updatedUserData.is_active,
+        updatedUserData.modules
+      );
+    } else if (data.type === userTypeEnum.ADMIN) {
+      // Create an Admin object with the retrieved data
+      returnObject = new Admin(
+        id,
+        updatedUserData.name,
+        updatedUserData.email,
+        updatedUserData.password,
+        updatedUserData.type,
+        updatedUserData.is_active,
+        updatedUserData.modules
+      );
+    } else {
+      // Create a User object with the retrieved data
+      returnObject = new User(
+        id,
+        updatedUserData.name,
+        updatedUserData.email,
+        updatedUserData.password,
+        updatedUserData.type,
+        updatedUserData.is_active,
+        updatedUserData.modules
+      );
+    }
+
+    return res.json(returnObject);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    return res.json({ message: 'User update failed!' });
+  }
 };
 
-const createClasses = async (req, res) => {
-  const classes = collection(db, 'classes');
+const destroy = async (req, res) => {
+  const { userId } = req.query;
 
-  await addDoc(classes, {
-    module_id: 'CSCI368',
-    date: '2023-01-04',
-    start_time: '08:30',
-    end_time: '11:30',
-    user_id: 'EnFVTWL9U1gfzyoPCmaE'
-  });
+  try {
+    // Get a reference to the user document
+    const userRef = doc(db, 'users', userId);
+    const userDataRef = await getDoc(userRef);
+
+    // Check if the user exists
+    if (!userDataRef.exists()) {
+      return res.json({ message: 'User not found' });
+    }
+
+    // Delete the user document
+    await deleteDoc(userRef);
+
+    return res.json({ message: 'User has been deleted successfully!' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    return res.json({ message: 'Internal server error' });
+  }
 };
 
-// const create = async (req, res) => {
-//   const { name, password, email, phoneNumber } = req.body;
+const login = async (req, res) => {
+  const { email, password } = req.body;
 
-//   if (!validatePhoneNumber(phoneNumber))
-//     return res.json({ message: 'This phone number is invalid' });
+  try {
+    // Get current user information via email
+    const searchQuery = query(users, where('email', '==', email));
+    const usersData = await getDocs(searchQuery);
 
-//   // Validate if user already exists using email
-//   const searchQuery = query(users, where('email', '==', email));
-//   const usersData = await getDocs(searchQuery);
+    // User not found
+    if (usersData.docs.length === 0) {
+      return res.json({ message: 'No user found' });
+    }
 
-//   // Error handling if email already exists
-//   if (usersData.docs.length !== 0) return res.json({ message: 'This email already exists' });
+    for (let i = 0; i < usersData.docs.length; i++) {
+      const userDoc = usersData.docs[i];
+      const userData = userDoc.data();
 
-//   // Create new user, default to being a customer
-//   const resp = await addDoc(users, {
-//     name,
-//     password,
-//     email,
-//     phoneNumber,
-//     type: userTypeEnum.CUSTOMER,
-//     walletBalance: 0,
-//     loyaltyPoints: 0
-//   });
+      // Check if the user is active
+      if (userData.is_active) {
+        if (!isUndefined(password) && password !== '') {
+          // Compare the provided password with the stored hash
 
-//   const userRef = doc(db, 'users', resp.id);
-//   const user = await getDoc(userRef);
-
-//   const data = user.data();
-
-//   const customer = new Customer(
-//     resp.id,
-//     data.name,
-//     data.email,
-//     data.phoneNumber,
-//     data.walletBalance,
-//     data.loyaltyPoints
-//   );
-
-//   return res.json(customer);
-// };
-
-// const update = async (req, res) => {
-//   const { id, phoneNumber, password } = req.body;
-
-//   if (!validatePhoneNumber(phoneNumber))
-//     return res.json({ message: 'This phone number is invalid' });
-
-//   // Get current user information
-//   const userRef = doc(db, 'users', id);
-//   const user = await getDoc(userRef);
-
-//   // Update user information
-//   const updatedUser = { ...user.data() };
-//   updatedUser.phoneNumber = phoneNumber;
-
-//   if (password !== '') {
-//     updatedUser.password = password;
-//   }
-
-//   // Update in firebase
-//   await setDoc(userRef, updatedUser);
-
-//   // Retrieve the updated user
-//   const userData = await getDoc(userRef);
-
-//   let returnObject;
-
-//   if (userData.type === userTypeEnum.CUSTOMER) {
-//     const customer = new Customer(
-//       id,
-//       userData.name,
-//       userData.email,
-//       userData.phoneNumber,
-//       userData.walletBalance,
-//       userData.loyaltyPoints
-//     );
-
-//     returnObject = customer;
-//   } else if (userData.type === userTypeEnum.STAFF) {
-//     const staff = new Staff(id, userData.name, userData.email, userData.phoneNumber);
-//     returnObject = staff;
-//   } else if (userData.type === userTypeEnum.MANAGEMENT) {
-//     const management = new Management(id, userData.name, userData.email, userData.phoneNumber);
-//     returnObject = management;
-//   } else if (userData.type === userTypeEnum.ADMIN) {
-//     const admin = new Admin(id, userData.name, userData.email, userData.phoneNumber);
-//     returnObject = admin;
-//   } else {
-//     const user = new User(id, userData.name, userData.email, userData.phoneNumber);
-//     returnObject = user;
-//   }
-
-//   return res.json(returnObject);
-// };
+          // Vanilla password comparison
+          if (password === userData.password) {
+            // Passwords match, proceed with login
+            return res.json({ success: true, message: 'Login successful' });
+          } else {
+            // Passwords do not match
+            return res.json({ success: false, message: 'Incorrect password' });
+          }
+        }
+      } else {
+        return res.json({ message: 'User is not active' });
+      }
+    }
+  } catch (error) {
+    return res.json({ message: 'Internal server error' });
+  }
+};
 
 export default {
   index,
   view,
-  createUser,
-  createModules,
-  createClasses
-  //   create,
-  //   update
+  create,
+  update,
+  destroy,
+  login
 };

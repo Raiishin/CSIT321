@@ -10,16 +10,21 @@ import {
 
 import Navbar from './components/Navbar';
 import Home from './components/Home';
-import Promotions from './components/Promotions';
+import About from './components/About';
+import Login from './components/Login';
+import Contact from './components/Contact';
+import FAQ from './components/FAQ';
+import Dashboard from './components/Dashboard';
 
 import useGlobalStore from './store/globalStore';
+import { isUndefined } from 'lodash';
 
 const App = () => {
   const [registrationStatus, setRegistrationStatus] = useState('blank');
   const [authenticationStatus, setAuthenticationStatus] = useState('blank');
 
-  const userId = useGlobalStore(state => state.userId);
-  // const userId = 'dOan3fY4B2BZRbTxdMgZ';
+  // const userId = useGlobalStore(state => state.userId);
+  const userId = 'dOan3fY4B2BZRbTxdMgZ';
 
   const attemptRegistration = async () => {
     const generatedRegistration = await generateRegistration(userId);
@@ -88,10 +93,10 @@ const App = () => {
   };
 
   return (
-    <div className="App">
+    <div>
       <Navbar />
 
-      <div className="flex flex-col gap-4">
+      {/* <div className="flex flex-col gap-4">
         <div>
           <button onClick={attemptRegistration}>Hello click me</button>
           <div>Registration Status: {registrationStatus}</div>
@@ -105,14 +110,16 @@ const App = () => {
           <button onClick={() => useGlobalStore.setState({ userId: 1 })}>Hello click me</button>
           <div>State: {userId}</div>
         </div>
-      </div>
+      </div> */}
 
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/main" element={<Home />} />
-        <Route path="/profile" element={<Home />} />
-        <Route path="/promotions" element={<Promotions />} />
-      </Routes>
+      <div className="bg-light-brown h-[100vh] w-[100vw]">
+        <Routes>
+          <Route path="/" element={isUndefined(userId) ? <Home /> : <Dashboard />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/faq" element={<FAQ />} />
+        </Routes>
+      </div>
     </div>
   );
 };
