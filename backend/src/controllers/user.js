@@ -1,5 +1,6 @@
 // User Controller
 import { initializeApp } from 'firebase/app';
+import bcrypt from 'bcrypt';
 import {
   getFirestore,
   collection,
@@ -68,76 +69,91 @@ const create = async (req, res) => {
     }
   }
 
-  // Create new user, default to being a STUDENT
-  const resp = await addDoc(users, {
-    name,
-    password,
-    email,
-    type,
-    is_active: isActive,
-    modules
-  });
-
-  // Fetch the user data from the newly created user
-  const userRef = doc(db, 'users', resp.id);
-  const userData = await getDoc(userRef);
-
-  let returnObject;
-
-  // Check if the user exists (userData is not null)
-  if (userData.exists()) {
-    const data = userData.data();
-
-    if (data.type === userTypeEnum.STUDENT) {
-      // Create a Student object with the retrieved data
-      returnObject = new Student(
-        resp.id,
-        data.name,
-        data.email,
-        data.password,
-        data.type,
-        data.is_active,
-        data.modules
-      );
-    } else if (data.type === userTypeEnum.LECTURER) {
-      // Create a lecturer object with the retrieved data
-      returnObject = new Lecturer(
-        resp.id,
-        data.name,
-        data.email,
-        data.password,
-        data.type,
-        data.is_active,
-        data.modules
-      );
-    } else if (data.type === userTypeEnum.ADMIN) {
-      // Create an Admin object with the retrieved data
-      returnObject = new Admin(
-        resp.id,
-        data.name,
-        data.email,
-        data.password,
-        data.type,
-        data.is_active,
-        data.modules
-      );
-    } else {
-      // Create a User object with the retrieved data
-      returnObject = new User(
-        resp.id,
-        data.name,
-        data.email,
-        data.password,
-        data.type,
-        data.is_active,
-        data.modules
-      );
+  return bcrypt.hash(password, config.salt, async (err, hash) => {
+    if (err) {
+      console.error('Error hashing password:', err);
+      return res.json({ message: err.message });
     }
 
-    return res.json(returnObject);
-  } else {
-    return res.json({ message: 'User not found after creation' });
-  }
+    // Create new user, default to being a STUDENT
+    const resp = await addDoc(users, {
+      name,
+      password: hash,
+      email,
+      type,
+      is_active: isActive,
+      modules
+    });
+
+    // Fetch the user data from the newly created user
+    const userRef = doc(db, 'users', resp.id);
+    const userData = await getDoc(userRef);
+
+    let returnObject;
+
+    // Check if the user exists (userData is not null)
+    if (userData.exists()) {
+      const data = userData.data();
+
+      if (data.type === userTypeEnum.STUDENT) {
+        // Create a Student object with the retrieved data
+        returnObject = new Student(
+          resp.id,
+          data.name,
+          data.password,
+          data.email,
+          data.type,
+          data.is_active,
+          data.modules
+        );
+      } else if (data.type === userTypeEnum.LECTURER) {
+        // Create a lecturer object with the retrieved data
+        returnObject = new Lecturer(
+          resp.id,
+          data.name,
+          data.password,
+          data.email,
+          data.type,
+          data.is_active,
+          data.modules
+        );
+      } else if (data.type === userTypeEnum.ADMIN) {
+        // Create an Admin object with the retrieved data
+        returnObject = new Admin(
+          resp.id,
+          data.name,
+          data.password,
+          data.email,
+          data.type,
+          data.is_active,
+          data.modules
+        );
+      } else {
+        // Create a User object with the retrieved data
+        returnObject = new User(
+          resp.id,
+          data.name,
+          data.password,
+          data.email,
+          data.type,
+          data.is_active,
+          data.modules
+        );
+      }
+
+      // checks if hashedPassword matches the one stored in DB
+      bcrypt.compare(password, hash, (err, result) => {
+        if (err) {
+          console.error('Error hashing password:', err);
+          return res.json({ message: err.message });
+        }
+      });
+
+      return res.json(returnObject);
+    } else {
+      return res.json({ message: 'User not found after creation' });
+    }
+  });
 };
 
 const update = async (req, res) => {
@@ -229,9 +245,10 @@ const update = async (req, res) => {
         updatedUserData.modules
       );
     }
-
+    console.log(hashedPassword);
     return res.json(returnObject);
   } catch (error) {
+    console.log(hashedPassword);
     console.error('Error updating user:', error);
     return res.json({ message: 'User update failed!' });
   }
@@ -260,8 +277,9 @@ const destroy = async (req, res) => {
   }
 };
 
+// Returns an additional response key (success: Boolean!)
 const login = async (req, res) => {
-  const { email, password } = req.body;
+  let { email, password } = req.body;
 
   try {
     // Get current user information via email
@@ -270,33 +288,32 @@ const login = async (req, res) => {
 
     // User not found
     if (usersData.docs.length === 0) {
-      return res.json({ message: 'No user found' });
+      return res.json({ success: false, message: 'No user found' });
     }
 
-    for (let i = 0; i < usersData.docs.length; i++) {
-      const userDoc = usersData.docs[i];
-      const userData = userDoc.data();
+    const userDoc = usersData.docs[0];
+    const userData = userDoc.data();
+
+    return bcrypt.compare(password, userData.password, async (err, result) => {
+      if (err) {
+        console.error('Error comparing passwords:', err);
+        return res.json({ success: result, message: err.message });
+      }
 
       // Check if the user is active
       if (userData.is_active) {
-        if (!isUndefined(password) && password !== '') {
-          // Compare the provided password with the stored hash
-
-          // Vanilla password comparison
-          if (password === userData.password) {
-            // Passwords match, proceed with login
-            return res.json({ success: true, message: 'Login successful' });
-          } else {
-            // Passwords do not match
-            return res.json({ success: false, message: 'Incorrect password' });
-          }
+        // Check if passwords match
+        if (result) {
+          return res.json({ success: result, message: 'Login successful' });
+        } else {
+          return res.json({ success: result, message: 'Incorrect password' });
         }
       } else {
-        return res.json({ message: 'User is not active' });
+        return res.json({ success: result, message: 'User is not active' });
       }
-    }
+    });
   } catch (error) {
-    return res.json({ message: 'Internal server error' });
+    return res.json({ success: false, message: error });
   }
 };
 
