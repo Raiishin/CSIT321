@@ -9,7 +9,8 @@ export default {
     messagingSenderId: '203468609133',
     appId: '1:203468609133:web:d617410368cda8aca45164',
     measurementId: 'G-YVC83XESQR'
-  }
+  },
+  salt: 10
   // expectedOrigin: 'https://csit321-project-backend.onrender.com', // Dev: http://localhost:3000
   /**
    * RP ID represents the "scope" of websites on which a authenticator should be usable. The Origin
