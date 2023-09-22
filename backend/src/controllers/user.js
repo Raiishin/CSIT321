@@ -245,10 +245,9 @@ const update = async (req, res) => {
         updatedUserData.modules
       );
     }
-    console.log(hashedPassword);
+
     return res.json(returnObject);
   } catch (error) {
-    console.log(hashedPassword);
     console.error('Error updating user:', error);
     return res.json({ message: 'User update failed!' });
   }
