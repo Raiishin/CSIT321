@@ -3,7 +3,7 @@ import useGlobalStore from '../store/globalStore';
 
 const Login = () => {
   useEffect(() => {
-    useGlobalStore.setState({ userId: 'rzGXmlC15rbKndUyyRIz' });
+    useGlobalStore.setState({ userId: 'rzGXmlC15rbKndUyyRIz', userType: 0 });
   }, []);
 
   const userId = useGlobalStore(state => state.userId);
