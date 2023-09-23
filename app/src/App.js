@@ -35,7 +35,7 @@ const App = () => {
           <Route path="/timetable" element={<Timetable />} />
           <Route path="/attendance" element={<Attendance />} />
 
-          <Route path="/account/" element={<EditAccountPage />} />
+          <Route path="/account" element={<EditAccountPage />} />
           <Route path="/account/create" element={<CreateAccountPage />} />
           <Route path="/account/edit" element={<EditExistingUserPage />} />
         </Routes>
