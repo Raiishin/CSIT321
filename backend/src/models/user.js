@@ -1,5 +1,5 @@
 class User {
-  constructor(id, name, password, email, type, isActive, modules) {
+  constructor(id, name, password, email, type, isActive, modules, enrollStatus) {
     this.id = id;
     this.name = name;
     this.password = password;
@@ -7,6 +7,7 @@ class User {
     this.type = type
     this.isActive = isActive
     this.modules = modules;
+    this.enrollStatus = enrollStatus;
   }
 
   static get id() {
@@ -35,6 +36,10 @@ class User {
 
   static get modules() {
     return this.type;
+  }
+
+  static get enrollStatus() {
+    return this.enrollStatus;
   }
 
 }

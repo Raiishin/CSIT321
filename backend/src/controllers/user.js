@@ -49,7 +49,7 @@ const view = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, password, email, type, isActive, modules } = req.body;
+  const { name, password, email, type, isActive, modules, enrollStatus } = req.body;
 
   // Validate if user already exists using email
   const searchQuery = query(users, where('email', '==', email));
@@ -85,7 +85,8 @@ const create = async (req, res) => {
       email,
       type,
       is_active: isActive,
-      modules
+      modules,
+      enrollStatus
     });
 
     // Fetch the user data from the newly created user
@@ -107,7 +108,8 @@ const create = async (req, res) => {
           data.email,
           data.type,
           data.is_active,
-          data.modules
+          data.modules,
+          data.enrollStatus
         );
       } else if (data.type === userTypeEnum.LECTURER) {
         // Create a lecturer object with the retrieved data
@@ -160,7 +162,7 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, password, email, isActive, modules } = req.body;
+  const { id, name, password, email, isActive, modules, enrollStatus } = req.body;
 
   try {
     // Get current user information via email
@@ -195,6 +197,11 @@ const update = async (req, res) => {
       userData.modules = modules;
     }
 
+    // Update enrollStatus if provided and not empty
+    if (!isUndefined(enrollStatus)) {
+      userData.enrollStatus = enrollStatus;
+    }
+
     // Update in Firebase
     await setDoc(userRef, userData);
 
@@ -212,9 +219,10 @@ const update = async (req, res) => {
         updatedUserData.password,
         updatedUserData.type,
         updatedUserData.is_active,
-        updatedUserData.modules
+        updatedUserData.modules,
+        updatedUserData.enrollStatus
       );
-    } else if (data.type === userTypeEnum.LECTURER) {
+    } else if (updatedUserData.type === userTypeEnum.LECTURER) {
       // Create a lecturer object with the retrieved data
       returnObject = new Lecturer(
         id,
@@ -225,7 +233,7 @@ const update = async (req, res) => {
         updatedUserData.is_active,
         updatedUserData.modules
       );
-    } else if (data.type === userTypeEnum.ADMIN) {
+    } else if (updatedUserData.type === userTypeEnum.ADMIN) {
       // Create an Admin object with the retrieved data
       returnObject = new Admin(
         id,
