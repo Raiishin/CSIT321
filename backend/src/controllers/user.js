@@ -316,11 +316,63 @@ const login = async (req, res) => {
   }
 };
 
+const resetPassword = async(req,res) =>{
+
+  let { email, password } = req.body;
+
+  try {
+    // Get current user information via email
+    const searchQuery = query(users, where('email', '==', email));
+    const usersData = await getDocs(searchQuery);
+
+    // User not found
+    if (usersData.docs.length === 0) {
+      return res.json({ success: false, message: 'No user found' });
+    }
+
+    const userDoc = usersData.docs[0];
+    const userData = userDoc.data();
+    const userRef = doc(db, 'users', userDoc.id);
+
+    // Update password if provided and not empty
+    if (!isUndefined(password) && password !== '') {
+      
+      bcrypt.compare(password, userData.password, async (err, result) => {
+        if (err) {
+          console.error('Error comparing passwords:', err);
+          return res.json({ success: false, message: 'Error comparing passwords' });
+        }
+
+        if (!result) {
+          // Passwords don't match, proceed with the update
+          const hashedPassword = await bcrypt.hash(password, config.salt);
+          userData.password = hashedPassword;
+
+          // Update in Firebase
+          await setDoc(userRef, userData);
+
+          return res.json({ success: true, message: 'Password reset successful' });
+        } else {
+          // Passwords match, return a response without updating
+          return res.json({ success: true, message: 'Password remains unchanged' });
+        }
+      });
+    }else{
+      // Password provided is empty return error message.
+      return res.json({ success: false, message: 'Password cannot be empty' });
+    }
+    
+  }catch (error) {
+    return res.json({ success: false, message: 'Password reset failed' });
+  }
+}
+
 export default {
   index,
   view,
   create,
   update,
   destroy,
-  login
+  login,
+  resetPassword,
 };
