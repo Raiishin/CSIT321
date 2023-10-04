@@ -1,45 +1,56 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState,useCallback } from 'react';
+import { Routes, Route, useNavigate, BrowserRouter} from 'react-router-dom';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+import {
+  generateRegistration,
+  generateAuthentication,
+  verifyRegistration,
+  verifyAuthentication
+} from './api/user';
+
 
 import Navbar from './components/Navbar';
 import Home from './components/Home';
 import About from './components/About';
-import Login from './components/Login';
-import Contact from './components/Contact';
-import FAQ from './components/FAQ';
-import Dashboard from './components/Dashboard';
-import Attendance from './components/Attendance';
-import Timetable from './components/Timetable';
-import CreateAccountPage from './components/CreateAccountPage';
-import EditAccountPage from './components/EditAccountPage';
-import EditExistingUserPage from './components/EditExistingUserPage';
+import ContactUs from './components/ContactUs';
+import FAQs from './components/FAQs';
+import AdminMainPage from './components/AdminMainPage';
+import EditAccountPage from './components/SAEditAccountPage';
+import CreateAccountPage from './components/SACreateAccountPage';
+import EditExistingUserPage from './components/SAEditExistingUserPage';
+import StaffAttendancePage from './components/StaffAttendancePage';
+import StaffTimetable from './components/StaffTimeTable';
 
-import useGlobalStore from './store/globalStore';
-import { isUndefined } from 'lodash';
+import IdleTimerProvider from './components/IdleTimerProvider';
 
 const App = () => {
-  const userId = useGlobalStore(state => state.userId);
-
+  
   return (
-    <div>
+      <div>
+      <IdleTimerProvider>
       <Navbar />
+      <Routes>
+        <Route path="*" element={<Home />} />
+        <Route path="/About" element={<About />} />
+        <Route path="/ContactUs" element={<ContactUs />} />
+        <Route path="/FAQs" element={<FAQs />} />
+      </Routes>
 
-      <div className="bg-light-brown h-[100vh] w-[100vw]">
-        <Routes>
-          <Route path="/" element={isUndefined(userId) ? <Home /> : <Dashboard />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/login" element={<Login />} />
+      </IdleTimerProvider>
+      {/*
+      <EditExistingUserPage/>
+      <CreateAccountPage/>
+      <AdminMainPage />
+      <StaffTimetable/>
+      <Routes>
+        <Route path="/EditAccountPage" element={<EditAccountPage />} />
+        <Route path="/CreateAccountPage" element={<CreateAccountPage />} />
+        <Route path="/Home" element={<Home />} />
+      </Routes>
 
-          <Route path="/timetable" element={<Timetable />} />
-          <Route path="/attendance" element={<Attendance />} />
+      <LandingPage />
 
-          <Route path="/account" element={<EditAccountPage />} />
-          <Route path="/account/create" element={<CreateAccountPage />} />
-          <Route path="/account/edit" element={<EditExistingUserPage />} />
-        </Routes>
-      </div>
+  */}
     </div>
   );
 };
