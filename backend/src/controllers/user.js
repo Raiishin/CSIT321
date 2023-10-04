@@ -25,9 +25,6 @@ import { isUndefined } from 'lodash-es';
 const app = initializeApp(config.firebaseConfig);
 const db = getFirestore(app);
 const users = collection(db, 'users');
-const modules = collection(db, 'modules');
-const classes = collection(db, 'classes');
-const attendance_logs = collection(db, 'attendance_logs');
 
 const index = async (req, res) => {
   const usersSnapshot = await getDocs(users);
@@ -49,7 +46,7 @@ const view = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, password, email, type, isActive, modules, enrollStatus } = req.body;
+  const { name, password, email, type, isActive, modules, enrollmentStatus } = req.body;
 
   // Validate if user already exists using email
   const searchQuery = query(users, where('email', '==', email));
@@ -86,7 +83,7 @@ const create = async (req, res) => {
       type,
       is_active: isActive,
       modules,
-      enrollStatus
+      enrollment_status: enrollmentStatus
     });
 
     // Fetch the user data from the newly created user
@@ -109,7 +106,7 @@ const create = async (req, res) => {
           data.type,
           data.is_active,
           data.modules,
-          data.enrollStatus
+          data.enrollmentStatus
         );
       } else if (data.type === userTypeEnum.LECTURER) {
         // Create a lecturer object with the retrieved data
