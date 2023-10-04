@@ -1,5 +1,5 @@
 export default {
   STUDENT: 0,
-  LECTURER: 1,
+  STAFF: 1,
   ADMIN: 2
 };

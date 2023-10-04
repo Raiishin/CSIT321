@@ -1,19 +1,26 @@
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { login } from '../api/user';
 import useGlobalStore from '../store/globalStore';
 
 const Login = () => {
-  useEffect(() => {
-    useGlobalStore.setState({ userId: 'rzGXmlC15rbKndUyyRIz', userType: 0 });
-  }, []);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const userId = useGlobalStore(state => state.userId);
+  const navigate = useNavigate();
 
-  console.log('userId', userId);
+  const handleLogin = async () => {
+    const { userId, userType, userName } = await login(email, password);
+
+    useGlobalStore.setState({ userId, userType, userName });
+
+    navigate('/');
+  };
 
   return (
     <div className="pt-20">
       <div className="max-w-sm mx-auto py-10 p-6 rounded shadow-md bg-[#F0F8FF]">
-        <h2 className="text-2xl font-semibold mb-4 text-center	">Sign In</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-center">Sign In</h2>
         <form>
           <div className="mb-4">
             <label htmlFor="email" className="block text-gray-700 font-bold mb-2">
@@ -22,9 +29,10 @@ const Login = () => {
             <input
               type="email"
               id="email"
-              name="email"
               required
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
             />
           </div>
           <div className="mb-4">
@@ -34,60 +42,29 @@ const Login = () => {
             <input
               type="password"
               id="password"
-              name="password"
               required
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
             />
           </div>
-          <div className="mb-4 pt-5">
-            <button
-              type="submit"
-              className="w-full bg-transparent hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue hover:border-transparent rounded"
-            >
-              Login
-            </button>
-          </div>
-          <div className="text-start">
-            <a href="/reset-password" className="text-gray-500 hover:underline">
-              Forgot Password? Click here
-            </a>
-          </div>
         </form>
+
+        <div className="mb-4 pt-5">
+          <button
+            type="submit"
+            className="w-full bg-transparent hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue hover:border-transparent rounded"
+            onClick={handleLogin}
+          >
+            Login
+          </button>
+        </div>
+        <div className="text-start">
+          <a href="/reset-password" className="text-gray-500 hover:underline">
+            Forgot Password? Click here
+          </a>
+        </div>
       </div>
-      {/* <form class="w-full max-w-sm">
-        <div class="md:flex md:items-center mb-6">
-          <div class="md:w-1/3">
-            <label
-              class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4"
-              for="inline-full-name">
-              Email:
-            </label>
-          </div>
-          <div class="md:w-2/3">
-            <input
-              class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-              id="inline-full-name"
-              type="text"
-              value="email"></input>
-          </div>
-        </div>
-        <div class="md:flex md:items-center mb-6">
-          <div class="md:w-1/3">
-            <label
-              class="block text-gray-500 font-bold md:text-right mb-1 md:mb-0 pr-4"
-              for="inline-password">
-              Password
-            </label>
-          </div>
-          <div class="md:w-2/3">
-            <input
-              class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-              id="inline-password"
-              type="password"
-              placeholder="******************"></input>
-          </div>
-        </div>
-      </form> */}
     </div>
   );
 };

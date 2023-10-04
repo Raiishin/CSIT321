@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 
 const useGlobalStore = create(set => ({
-  userId: 'rzGXmlC15rbKndUyyRIz',
-  userType: 0,
-  reset: () => set({ userId: undefined, userType: undefined })
+  userId: undefined,
+  userType: undefined,
+  userName: undefined,
+  reset: () => set({ userId: undefined, userType: undefined, userName: undefined })
 }));
 
 export default useGlobalStore;

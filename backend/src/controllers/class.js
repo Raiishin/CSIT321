@@ -1,5 +1,4 @@
 // Classes Controller
-import { isAfter } from 'date-fns';
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore,
@@ -12,6 +11,8 @@ import {
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import Class from '../models/class.js';
+import { latestClass, sortClasses } from '../library/class.js';
+import { getUserById } from '../library/user.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -22,21 +23,13 @@ const modules = collection(db, 'modules');
 const users = collection(db, 'users');
 
 // TODO :: Refactor the nested loop if possible
+// 1 possible way is to query for all lecturers first, then each time, filter through the array and find the lecturer name
 const index = async (req, res) => {
   const { userId } = req.query;
 
   try {
     // Get user data
-    const userDocRef = doc(users, userId);
-    const userDocSnapshot = await getDoc(userDocRef);
-
-    // Check if the user document exists
-    if (!userDocSnapshot.exists()) {
-      return res.json({ message: 'User not found' });
-    }
-
-    // Get the user data
-    const userData = userDocSnapshot.data();
+    const userData = await getUserById(userId);
 
     // Retrieve Module IDs
     const moduleIds = userData.modules;
@@ -87,24 +80,8 @@ const index = async (req, res) => {
         }
       }
     }
-    const classesByModuleArr = Object.values(classesByModule);
 
-    // For each module, sort according to date then time
-    for (let j = 0; j < classesByModuleArr.length; j++) {
-      classesByModuleArr[j].sort((a, b) => {
-        if (a.date === b.date) {
-          return +a.startTime.substring(0, 2) - +b.startTime.substring(0, 2);
-        } else {
-          const dateStrA = a.date.split('-');
-          const dateStrB = b.date.split('-');
-
-          const dateA = new Date(+dateStrA[0], +dateStrA[1] - 1, +dateStrA[2]);
-          const dateB = new Date(+dateStrB[0], +dateStrB[1] - 1, +dateStrB[2]);
-
-          return isAfter(dateB, dateA) ? -1 : 1;
-        }
-      });
-    }
+    const classesByModuleArr = sortClasses(Object.values(classesByModule));
 
     // Return the classes data as an array
     return res.json({ data: classesByModuleArr });
@@ -113,6 +90,25 @@ const index = async (req, res) => {
   }
 };
 
+const latest = async (req, res) => {
+  const { userId } = req.query;
+
+  try {
+    // Get user data
+    const userData = await getUserById(userId);
+
+    // Retrieve Module IDs
+    const moduleIds = userData.modules;
+
+    const userLatestClass = await latestClass(moduleIds);
+
+    return res.json(userLatestClass);
+  } catch (error) {
+    return res.json({ message: error.message });
+  }
+};
+
 export default {
-  index
+  index,
+  latest
 };

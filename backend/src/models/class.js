@@ -1,5 +1,6 @@
 class Class {
-  constructor(date, startTime, endTime, lecturerName, period, type, venue) {
+  constructor(id, date, startTime, endTime, lecturerName, period, type, venue) {
+    this.id = id;
     this.date = date;
     this.startTime = startTime;
     this.endTime = endTime;
@@ -7,6 +8,10 @@ class Class {
     this.period = period;
     this.type = type;
     this.venue = venue;
+  }
+
+  static get id() {
+    return this.id;
   }
 
   static get date() {

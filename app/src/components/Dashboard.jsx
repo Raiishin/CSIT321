@@ -15,12 +15,13 @@ const Dashboard = () => {
 
   const userId = useGlobalStore(state => state.userId);
   const userType = useGlobalStore(state => state.userType);
+  const userName = useGlobalStore(state => state.userName);
   const reset = useGlobalStore(state => state.reset);
 
   return (
     <div>
       <div class="flex justify-center pt-6 pb-4">
-        <p className="text-cyan text-4xl font-bold">Welcome Student {userId}!</p>
+        <p className="text-cyan text-4xl font-bold">Welcome Student {userName}!</p>
       </div>
 
       <div class="flex justify-center pb-8">
