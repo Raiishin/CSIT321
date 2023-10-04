@@ -24,7 +24,7 @@ const Login = () => {
               id="email"
               name="email"
               required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 shadow-md"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
             />
           </div>
           <div className="mb-4">
@@ -36,13 +36,14 @@ const Login = () => {
               id="password"
               name="password"
               required
-              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue-500 shadow-md"
+              className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
             />
           </div>
           <div className="mb-4 pt-5">
             <button
               type="submit"
-              className="w-full bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">
+              className="w-full bg-transparent hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue hover:border-transparent rounded"
+            >
               Login
             </button>
           </div>
