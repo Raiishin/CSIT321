@@ -46,7 +46,7 @@ const view = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, password, email, type, isActive, modules } = req.body;
+  const { name, password, email, type, isActive, modules, enrollmentStatus } = req.body;
 
   // Validate if user already exists using email
   const searchQuery = query(users, where('email', '==', email));
@@ -82,7 +82,8 @@ const create = async (req, res) => {
       email,
       type,
       is_active: isActive,
-      modules
+      modules,
+      enrollment_status: enrollmentStatus
     });
 
     // Fetch the user data from the newly created user
@@ -104,7 +105,8 @@ const create = async (req, res) => {
           data.email,
           data.type,
           data.is_active,
-          data.modules
+          data.modules,
+          data.enrollmentStatus
         );
       } else if (data.type === userTypeEnum.LECTURER) {
         // Create a lecturer object with the retrieved data
@@ -157,7 +159,7 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, password, email, isActive, modules } = req.body;
+  const { id, name, password, email, isActive, modules, enrollStatus } = req.body;
 
   try {
     // Get current user information via email
@@ -192,6 +194,11 @@ const update = async (req, res) => {
       userData.modules = modules;
     }
 
+    // Update enrollStatus if provided and not empty
+    if (!isUndefined(enrollStatus)) {
+      userData.enrollStatus = enrollStatus;
+    }
+
     // Update in Firebase
     await setDoc(userRef, userData);
 
@@ -209,9 +216,10 @@ const update = async (req, res) => {
         updatedUserData.password,
         updatedUserData.type,
         updatedUserData.is_active,
-        updatedUserData.modules
+        updatedUserData.modules,
+        updatedUserData.enrollStatus
       );
-    } else if (data.type === userTypeEnum.LECTURER) {
+    } else if (updatedUserData.type === userTypeEnum.LECTURER) {
       // Create a lecturer object with the retrieved data
       returnObject = new Lecturer(
         id,
@@ -222,7 +230,7 @@ const update = async (req, res) => {
         updatedUserData.is_active,
         updatedUserData.modules
       );
-    } else if (data.type === userTypeEnum.ADMIN) {
+    } else if (updatedUserData.type === userTypeEnum.ADMIN) {
       // Create an Admin object with the retrieved data
       returnObject = new Admin(
         id,
@@ -316,8 +324,7 @@ const login = async (req, res) => {
   }
 };
 
-const resetPassword = async(req,res) =>{
-
+const resetPassword = async (req, res) => {
   let { email, password } = req.body;
 
   try {
@@ -336,7 +343,6 @@ const resetPassword = async(req,res) =>{
 
     // Update password if provided and not empty
     if (!isUndefined(password) && password !== '') {
-      
       bcrypt.compare(password, userData.password, async (err, result) => {
         if (err) {
           console.error('Error comparing passwords:', err);
@@ -357,15 +363,14 @@ const resetPassword = async(req,res) =>{
           return res.json({ success: true, message: 'Password remains unchanged' });
         }
       });
-    }else{
+    } else {
       // Password provided is empty return error message.
       return res.json({ success: false, message: 'Password cannot be empty' });
     }
-    
-  }catch (error) {
+  } catch (error) {
     return res.json({ success: false, message: 'Password reset failed' });
   }
-}
+};
 
 export default {
   index,
@@ -374,5 +379,5 @@ export default {
   update,
   destroy,
   login,
-  resetPassword,
+  resetPassword
 };
