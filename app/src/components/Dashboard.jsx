@@ -19,15 +19,15 @@ const Dashboard = () => {
 
   return (
     <div>
-      <div class="flex justify-center pt-6 pb-4">
+      <div class="flex justify-center pt-6 pb-4 z-10">
         <p className="text-cyan text-4xl font-bold">Welcome Student {userId}!</p>
       </div>
 
-      <div class="flex justify-center pb-8">
+      <div class="flex justify-center pb-8 z-10">
         <p className="text-cyan text-2xl font-bold">What would you like to do today?</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-10 bg-light-cyan justify-items-center content-center h-[40vh]">
+      <div className="z-20 grid grid-cols-3 gap-10 bg-light-cyan justify-items-center content-center h-[40vh]">
         {userType === userTypeEnum.STUDENT && (
           <>
             <button onClick={() => navigate('/timetable')}>
@@ -43,11 +43,11 @@ const Dashboard = () => {
         {userType === userTypeEnum.ADMIN && (
           <>
             <button onClick={() => navigate('/account/edit')}>
-              <img src={editAccountImage} alt="editAccountImage" class="w-40" />
+              <img src={editAccountImage} alt="editAccountImage" class="w-40 z-20" />
             </button>
 
             <button onClick={() => navigate('/account/create')}>
-              <img src={createAccountImage} alt="createAccountImage" class="w-40" />
+              <img src={createAccountImage} alt="createAccountImage" class="w-40 z-20" />
             </button>
           </>
         )}
@@ -59,7 +59,7 @@ const Dashboard = () => {
               navigate('/');
             }}
           >
-            <img src={logoutImage} alt="logoutImage" class="w-40" />
+            <img src={logoutImage} alt="logoutImage" class="w-40 z-20" />
           </button>
         </div>
       </div>
