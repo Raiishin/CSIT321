@@ -7,6 +7,7 @@ import AuthController from './src/controllers/auth.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -33,6 +34,16 @@ const { ENABLE_HTTPS, rpID } = process.env;
 // } else {
 //   http.createServer(app).listen(port, () => console.log('Application Started at: ' + port));
 // }
+
+// Create a rate limiter middleware
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 1000, // Maximum number of requests per windowMs(15mins)
+    message: 'Too many requests from this IP, please try again later.',
+  });
+  
+// Apply the rate limiter to all routes
+app.use(limiter);
 
 http.createServer(app).listen(port, () => console.log('Application Started at: ' + port));
 
