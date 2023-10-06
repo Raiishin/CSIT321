@@ -37,8 +37,8 @@ const { ENABLE_HTTPS, rpID } = process.env;
 
 // Create a rate limiter middleware
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 1000, // Maximum number of requests per windowMs(15mins)
+    windowMs: 1 * 60 * 1000, // 15 minutes
+    max: 5, // Maximum number of requests per windowMs(15mins)
     message: 'Too many requests from this IP, please try again later.',
   });
   
