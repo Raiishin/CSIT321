@@ -7,6 +7,7 @@ import AuthController from './src/controllers/auth.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -34,26 +35,32 @@ const { ENABLE_HTTPS, rpID } = process.env;
 //   http.createServer(app).listen(port, () => console.log('Application Started at: ' + port));
 // }
 
+const rateLimitConfig = {
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 5, // Maximum number of requests per windowMs(5 per min)
+    message: 'Too many requests from this IP, please try again later.',
+};
+
 http.createServer(app).listen(port, () => console.log('Application Started at: ' + port));
 
 const router = express.Router();
 
 //Users Endpoint
-router.get('/users', UserController.index);
-router.post('/user/create', UserController.create);
-router.post('/user/update', UserController.update);
-router.post('/user/login', UserController.login);
-router.post('/user/reset-password', UserController.resetPassword);
-router.delete('/user', UserController.destroy);
+router.get('/users', rateLimit(rateLimitConfig), UserController.index);
+router.post('/user/create', rateLimit(rateLimitConfig), UserController.create);
+router.post('/user/update', rateLimit(rateLimitConfig), UserController.update);
+router.post('/user/login', rateLimit(rateLimitConfig), UserController.login);
+router.post('/user/reset-password', rateLimit(rateLimitConfig), UserController.resetPassword);
+router.delete('/user', rateLimit(rateLimitConfig), UserController.destroy);
 
 //Class Endpoint
-router.get('/classes', ClassController.index);
+router.get('/classes', rateLimit(rateLimitConfig), ClassController.index);
 
 //Auth Endpoint
-router.get('/generate/registration', AuthController.generateRegistration);
-router.get('/generate/authentication', AuthController.generateAuthentication);
+router.get('/generate/registration', rateLimit(rateLimitConfig), AuthController.generateRegistration);
+router.get('/generate/authentication', rateLimit(rateLimitConfig), AuthController.generateAuthentication);
 
-router.post('/verify/registration', AuthController.registerUser);
-router.post('/verify/authentication', AuthController.authenticateUser);
+router.post('/verify/registration', rateLimit(rateLimitConfig), AuthController.registerUser);
+router.post('/verify/authentication', rateLimit(rateLimitConfig), AuthController.authenticateUser);
 
 app.use('/', router); //to use the routes
