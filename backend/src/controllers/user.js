@@ -16,10 +16,12 @@ import {
 import config from '../config/index.js';
 import User from '../models/user.js';
 import Student from '../models/student.js';
-import Lecturer from '../models/lecturer.js';
+import Staff from '../models/staff.js';
 import Admin from '../models/admin.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
 import { isUndefined } from 'lodash-es';
+import errorMessages from '../constants/errorMessages.js';
+import { getUserById, getUserByEmail } from '../library/user.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -33,131 +35,129 @@ const index = async (req, res) => {
   return res.json({ usersData });
 };
 
+// TODO :: Should refactor this to by email as well
 const view = async (req, res) => {
   const { userId } = req.query;
 
-  // Get current user information via email
-  const userRef = doc(db, 'users', userId);
-  const userDataRef = await getDoc(userRef);
+  try {
+    // Get user data
+    const userData = await getUserById(userId);
 
-  return res.json(
-    userDataRef.exists() ? { user: userDataRef.data() } : { message: 'User not found' }
-  );
+    return res.json({ user: userData });
+  } catch (error) {
+    return res.json({ message: error.message });
+  }
 };
 
 const create = async (req, res) => {
-  const { name, password, email, type, isActive, modules } = req.body;
+  const { name, password, email, type, isActive, modules, enrollmentStatus } = req.body;
 
-  // Validate if user already exists using email
-  const searchQuery = query(users, where('email', '==', email));
-  const usersData = await getDocs(searchQuery);
+  try {
+    // Get user data
+    const user = await getUserByEmail(email, false);
 
-  // Error handling if email already exists
-  if (usersData.docs.length !== 0) {
-    return res.json({ message: 'This email already exists' });
-  }
-
-  const modulesCol = collection(db, 'modules');
-
-  // Check if modules exist in the "modules" collection
-  for (const moduleId of modules) {
-    const moduleRef = doc(modulesCol, moduleId);
-    const moduleDoc = await getDoc(moduleRef);
-
-    if (!moduleDoc.exists()) {
-      return res.json({ message: `Module ${moduleId} does not exist` });
-    }
-  }
-
-  return bcrypt.hash(password, config.salt, async (err, hash) => {
-    if (err) {
-      console.error('Error hashing password:', err);
-      return res.json({ message: err.message });
+    if (!isUndefined(user) && !isUndefined(user.id)) {
+      throw new Error(errorMessages.USERALREADYEXISTS);
     }
 
-    // Create new user, default to being a STUDENT
-    const resp = await addDoc(users, {
-      name,
-      password: hash,
-      email,
-      type,
-      is_active: isActive,
-      modules
-    });
+    const modulesCol = collection(db, 'modules');
 
-    // Fetch the user data from the newly created user
-    const userRef = doc(db, 'users', resp.id);
-    const userData = await getDoc(userRef);
+    // Check if modules exist in the "modules" collection
+    for (const moduleId of modules) {
+      const moduleRef = doc(modulesCol, moduleId);
+      const moduleDoc = await getDoc(moduleRef);
 
-    let returnObject;
+      if (!moduleDoc.exists()) {
+        throw new Error(`Module ${moduleId} does not exist`);
+      }
+    }
 
-    // Check if the user exists (userData is not null)
-    if (userData.exists()) {
-      const data = userData.data();
+    return bcrypt.hash(password, config.salt, async (err, hash) => {
+      if (err) {
+        throw new Error(err);
+      }
 
-      if (data.type === userTypeEnum.STUDENT) {
+      // Create new user, default to being a STUDENT
+      const resp = await addDoc(users, {
+        name,
+        password: hash,
+        email,
+        type,
+        is_active: isActive,
+        modules,
+        enrollment_status: enrollmentStatus
+      });
+
+      // Fetch the user data from the newly created user
+      const userData = await getUserById(resp.id);
+
+      console.log('userData', userData);
+
+      let returnObject;
+
+      if (userData.type === userTypeEnum.STUDENT) {
         // Create a Student object with the retrieved data
         returnObject = new Student(
           resp.id,
-          data.name,
-          data.password,
-          data.email,
-          data.type,
-          data.is_active,
-          data.modules
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.modules,
+          userData.enrollment_status
         );
-      } else if (data.type === userTypeEnum.LECTURER) {
-        // Create a lecturer object with the retrieved data
-        returnObject = new Lecturer(
+      } else if (userData.type === userTypeEnum.STAFF) {
+        // Create a staff object with the retrieved data
+        returnObject = new Staff(
           resp.id,
-          data.name,
-          data.password,
-          data.email,
-          data.type,
-          data.is_active,
-          data.modules
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.modules
         );
-      } else if (data.type === userTypeEnum.ADMIN) {
+      } else if (userData.type === userTypeEnum.ADMIN) {
         // Create an Admin object with the retrieved data
         returnObject = new Admin(
           resp.id,
-          data.name,
-          data.password,
-          data.email,
-          data.type,
-          data.is_active,
-          data.modules
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.modules
         );
       } else {
         // Create a User object with the retrieved data
         returnObject = new User(
           resp.id,
-          data.name,
-          data.password,
-          data.email,
-          data.type,
-          data.is_active,
-          data.modules
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.modules
         );
       }
 
       // checks if hashedPassword matches the one stored in DB
       bcrypt.compare(password, hash, (err, result) => {
         if (err) {
-          console.error('Error hashing password:', err);
-          return res.json({ message: err.message });
+          throw new Error(err);
         }
       });
 
       return res.json(returnObject);
-    } else {
-      return res.json({ message: 'User not found after creation' });
-    }
-  });
+    });
+  } catch (error) {
+    return res.json({ message: error.message });
+  }
 };
 
 const update = async (req, res) => {
-  const { id, name, password, email, isActive, modules } = req.body;
+  const { id, name, password, email, isActive, modules, enrollmentStatus } = req.body;
 
   try {
     // Get current user information via email
@@ -192,6 +192,11 @@ const update = async (req, res) => {
       userData.modules = modules;
     }
 
+    // Update enrollmentStatus if provided and not empty
+    if (!isUndefined(enrollmentStatus)) {
+      userData.enrollmentStatus = enrollmentStatus;
+    }
+
     // Update in Firebase
     await setDoc(userRef, userData);
 
@@ -209,11 +214,12 @@ const update = async (req, res) => {
         updatedUserData.password,
         updatedUserData.type,
         updatedUserData.is_active,
-        updatedUserData.modules
+        updatedUserData.modules,
+        updatedUserData.enrollmentStatus
       );
-    } else if (data.type === userTypeEnum.LECTURER) {
-      // Create a lecturer object with the retrieved data
-      returnObject = new Lecturer(
+    } else if (data.type === userTypeEnum.STAFF) {
+      // Create a staff object with the retrieved data
+      returnObject = new Staff(
         id,
         updatedUserData.name,
         updatedUserData.email,
@@ -222,7 +228,7 @@ const update = async (req, res) => {
         updatedUserData.is_active,
         updatedUserData.modules
       );
-    } else if (data.type === userTypeEnum.ADMIN) {
+    } else if (updatedUserData.type === userTypeEnum.ADMIN) {
       // Create an Admin object with the retrieved data
       returnObject = new Admin(
         id,
@@ -263,7 +269,7 @@ const destroy = async (req, res) => {
 
     // Check if the user exists
     if (!userDataRef.exists()) {
-      return res.json({ message: 'User not found' });
+      throw new Error(errorMessages.USERNOTFOUND);
     }
 
     // Delete the user document
@@ -272,12 +278,44 @@ const destroy = async (req, res) => {
     return res.json({ message: 'User has been deleted successfully!' });
   } catch (error) {
     console.error('Error deleting user:', error);
-    return res.json({ message: 'Internal server error' });
+    return res.json({ message: error.message });
   }
 };
 
 // Returns an additional response key (success: Boolean!)
 const login = async (req, res) => {
+  let { email, password } = req.body;
+
+  try {
+    // Get user data
+    const userData = await getUserByEmail(email);
+
+    return bcrypt.compare(password, userData.data.password, async (err, result) => {
+      if (err) {
+        console.error('Error comparing passwords:', err);
+        return res.json({ success: result, message: err.message });
+      }
+
+      // Check if the user is active
+      if (userData.data.is_active) {
+        // Check if passwords match
+        return res.json({
+          success: result,
+          userName: userData.data.name,
+          userId: userData.id,
+          userType: userData.data.type,
+          message: result ? 'Login successful' : errorMessages.INCORRECTPASSWORD
+        });
+      } else {
+        return res.json({ success: result, message: errorMessages.USERISIANCTIVE });
+      }
+    });
+  } catch (error) {
+    return res.json({ success: false, message: error.message });
+  }
+};
+
+const resetPassword = async (req, res) => {
   let { email, password } = req.body;
 
   try {
@@ -287,32 +325,41 @@ const login = async (req, res) => {
 
     // User not found
     if (usersData.docs.length === 0) {
-      return res.json({ success: false, message: 'No user found' });
+      throw new Error(errorMessages.USERNOTFOUND);
     }
 
     const userDoc = usersData.docs[0];
     const userData = userDoc.data();
+    const userRef = doc(db, 'users', userDoc.id);
 
-    return bcrypt.compare(password, userData.password, async (err, result) => {
-      if (err) {
-        console.error('Error comparing passwords:', err);
-        return res.json({ success: result, message: err.message });
-      }
-
-      // Check if the user is active
-      if (userData.is_active) {
-        // Check if passwords match
-        if (result) {
-          return res.json({ success: result, message: 'Login successful' });
-        } else {
-          return res.json({ success: result, message: 'Incorrect password' });
+    // Update password if provided and not empty
+    if (!isUndefined(password) && password !== '') {
+      bcrypt.compare(password, userData.password, async (err, result) => {
+        if (err) {
+          console.error('Error comparing passwords:', err);
+          return res.json({ success: false, message: 'Error comparing passwords' });
         }
-      } else {
-        return res.json({ success: result, message: 'User is not active' });
-      }
-    });
+
+        if (!result) {
+          // Passwords don't match, proceed with the update
+          const hashedPassword = await bcrypt.hash(password, config.salt);
+          userData.password = hashedPassword;
+
+          // Update in Firebase
+          await setDoc(userRef, userData);
+
+          return res.json({ success: true, message: 'Password reset successful' });
+        } else {
+          // Passwords match, return a response without updating
+          return res.json({ success: true, message: 'Password remains unchanged' });
+        }
+      });
+    } else {
+      // Password provided is empty return error message.
+      return res.json({ success: false, message: 'Password cannot be empty' });
+    }
   } catch (error) {
-    return res.json({ success: false, message: error });
+    return res.json({ success: false, message: error.message });
   }
 };
 
@@ -322,5 +369,6 @@ export default {
   create,
   update,
   destroy,
-  login
+  login,
+  resetPassword
 };

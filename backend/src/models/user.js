@@ -4,8 +4,8 @@ class User {
     this.name = name;
     this.password = password;
     this.email = email;
-    this.type = type
-    this.isActive = isActive
+    this.type = type;
+    this.isActive = isActive;
     this.modules = modules;
   }
 
@@ -36,7 +36,6 @@ class User {
   static get modules() {
     return this.type;
   }
-
 }
 
 export default User;
