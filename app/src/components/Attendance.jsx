@@ -7,6 +7,8 @@ import {
   verifyAuthentication
 } from '../api/auth';
 import useGlobalStore from '../store/globalStore';
+import { markAttendance } from '../api/attendance';
+import { isUndefined } from 'lodash';
 
 const Attendance = () => {
   const [registrationStatus, setRegistrationStatus] = useState('blank');
@@ -69,11 +71,11 @@ const Attendance = () => {
 
       console.log('verifyAuthenticationResponse', verifyAuthenticationResponse);
 
-      setAuthenticationStatus(
-        verifyAuthenticationResponse.verified
-          ? 'authentication completed'
-          : verifyAuthenticationResponse.error.message
-      );
+      if (verifyAuthenticationResponse.verified) {
+        const resp = await markAttendance(userId);
+
+        setAuthenticationStatus(!isUndefined(resp.status) ? resp.status : resp.message);
+      }
     } catch (error) {
       // Some basic error handling
       setAuthenticationStatus(error.message);

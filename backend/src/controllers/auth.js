@@ -1,6 +1,6 @@
 // Auth Controller
 import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore/lite';
+import { getFirestore, doc, getDocs, getDoc, setDoc } from 'firebase/firestore/lite';
 import { isUndefined } from 'lodash-es';
 import dotenv from 'dotenv';
 import {
@@ -29,12 +29,10 @@ const { expectedOrigin, rpID } = process.env;
  * Here, the example server assumes the following user has completed login:
  */
 
-const loggedInUserId = 'internalUserId';
-
 const inMemoryUserDeviceDB = {
-  [loggedInUserId]: {
-    id: loggedInUserId,
-    name: loggedInUserId,
+  ['internalUserId']: {
+    id: 'internalUserId',
+    name: 'internalUserId',
     devices: []
   }
 };
@@ -68,7 +66,6 @@ const generateRegistration = async (req, res) => {
     rpName: 'CSIT321 FYP',
     rpID,
     userID: userId,
-    // userID: loggedInUserId,
     userName: user.name,
     timeout: 60000,
     attestationType: 'none',
@@ -129,13 +126,12 @@ const registerUser = async (req, res) => {
 
   const { devices } = user;
 
-  // // Query for user from firebase
-  // const userRef = doc(db, 'users', userId);
-  // const usersData = await getDoc(userRef);
+  // Query for authenticator from firebase
+  // const authenticatorRef = doc(db, 'authenticators', userId);
+  // const authenticatorsData = await getDoc(authenticatorRef);
 
-  // const user = usersData.data();
-
-  // const devices = JSON.parse(user.devices);
+  // const devices = authenticatorsData.exists() ? authenticatorsData.data() : [];
+  console.log('devices', devices);
 
   try {
     const verification = await verifyRegistrationResponse({
@@ -157,11 +153,6 @@ const registerUser = async (req, res) => {
         isoUint8Array.areEqual(device.credentialID, credentialID)
       );
 
-      // const existingDevice = devices.find(device => {
-      //   console.log(device.credentialID);
-      //   device.credentialID === credentialID.toString();
-      // });
-
       if (!existingDevice) {
         /**
          * Add the returned device to the user's list of devices
@@ -169,21 +160,23 @@ const registerUser = async (req, res) => {
         const newDevice = {
           credentialPublicKey,
           credentialID,
-          // credentialID: credentialID.toString(),
           counter,
           transports: body.response.transports
         };
 
         devices.push(newDevice);
+
+        // NOTE ERROR :: Unspported field -> Uint8Array
+        // const res = await setDoc(doc(db, 'authenticators', userId), {
+        //   credentialPublicKey,
+        //   credentialID,
+        //   counter,
+        //   transports: body.response.transports
+        // });
+
+        // console.log('res', res);
       }
     }
-
-    // // Update devices for user in firebase
-    // const updatedUser = { ...user };
-    // updatedUser.devices = JSON.stringify(devices);
-
-    // // Update in firebase
-    // await setDoc(userRef, updatedUser);
 
     return res.send({ verified });
   } catch (error) {
