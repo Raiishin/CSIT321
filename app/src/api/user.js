@@ -20,3 +20,9 @@ export const resetPassword = async (email, password) => {
 
   return data;
 };
+
+export const getAllUserData = async () => {
+  const { data } = await axios.get(`${baseEndpoint}s`);
+
+  return data;
+};
