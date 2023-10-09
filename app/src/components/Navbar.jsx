@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGlobalStore from '../store/globalStore';
+import useGlobalStore from '../store/globalStore';
 
 import SIMLogo from '../assets/SIM-logo.jpg';
 import LoginImage from '../assets/login.jpg';
@@ -10,6 +11,7 @@ import { isUndefined } from 'lodash';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { userId } = useGlobalStore();
   const { userId } = useGlobalStore();
 
   const NavbarButtons = [
@@ -36,6 +38,7 @@ const Navbar = () => {
           </button>
         </div>
       ) : null}
+  
 
       <div className="basis-full bg-light-brown">
         <nav>
