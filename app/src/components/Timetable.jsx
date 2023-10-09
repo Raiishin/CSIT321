@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { getClasses } from '../api/class';
 import useGlobalStore from '../store/globalStore';
 import { ColorRing } from 'react-loader-spinner';
+import { isUndefined } from 'lodash';
 
 const Timetable = () => {
   const [classes, setClasses] = useState([]);
+  const [modules, setModules] = useState([]);
 
   const userId = useGlobalStore(state => state.userId);
   const tableHeaders = ['Module Code', 'Venue', 'Date & Time', 'Type', 'Lecturer'];
@@ -17,6 +19,7 @@ const Timetable = () => {
     const initializePageData = async () => {
       const { data } = await getClasses(userId);
       setClasses(data);
+      setModules(Object.keys(data));
     };
 
     initializePageData();
@@ -25,34 +28,38 @@ const Timetable = () => {
   return (
     <div>
       <div class="flex text-center justify-center pt-8 bg-light-brown">
-        <p className="text-cyan text-4xl font-bold underline">Timetable</p>
+        <p className="text-cyan text-4xl font-bold underline mb-6">Timetable</p>
       </div>
 
-      {classes.length > 0 ? (
-        <div className="w-full col-span-3 flex pb-20 items-center justify-center min-w-[70%]">
-          <table className="m-10 border-collapse bg-gray-50 border-b-2 border-slate-500 w-3/4 font-sans">
-            <thead class="bg-light-gray">
-              <tr>{tableHeaders.map(tableHeader => formattedTableRow(tableHeader))}</tr>
-            </thead>
+      {!isUndefined(classes) && modules.length > 0 ? (
+        <div className="w-full col-span-3 flex pb-20 items-center justify-center min-w-[70%] flex flex-col">
+          {modules.map(module => (
+            <div className="w-full p-4">
+              <h1 className="text-white text-2xl">Module Code: {module}</h1>
 
-            <tbody>
-              {classes.map((classData, index) => (
-                <>
-                  {classData.map(classItem => (
-                    <tr class="bg-white border-2">
-                      {formattedTableRow(`${classItem.moduleId} - ${classItem.moduleName}`)}
-                      {classItem.venue ? formattedTableRow(classItem?.venue) : <td />}
-                      {formattedTableRow(
-                        `${classItem?.date} ${classItem?.startTime} - ${classItem?.endTime}`
-                      )}
-                      {classItem.type ? formattedTableRow(classItem?.type) : <td />}
-                      {formattedTableRow(`${classItem?.lecturerName}`)}
-                    </tr>
+              <table className="m-10 border-collapse bg-gray-50 border-b-2 border-slate-500 w-3/4 font-sans rounded">
+                <thead class="bg-light-gray">
+                  <tr>{tableHeaders.map(tableHeader => formattedTableRow(tableHeader))}</tr>
+                </thead>
+
+                <tbody>
+                  {classes[module].map((classItem, index) => (
+                    <>
+                      <tr class="bg-white border-2">
+                        {formattedTableRow(`${classItem.moduleId} - ${classItem.moduleName}`)}
+                        {classItem.venue ? formattedTableRow(classItem?.venue) : <td />}
+                        {formattedTableRow(
+                          `${classItem?.date} ${classItem?.startTime} - ${classItem?.endTime}`
+                        )}
+                        {classItem.type ? formattedTableRow(classItem?.type) : <td />}
+                        {formattedTableRow(`${classItem?.lecturerName}`)}
+                      </tr>
+                    </>
                   ))}
-                </>
-              ))}
-            </tbody>
-          </table>
+                </tbody>
+              </table>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="flex place-content-center m-16">

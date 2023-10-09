@@ -25,21 +25,19 @@ export const sortClasses = classesByModuleArr => {
   const arr = [...classesByModuleArr];
 
   // For each module, sort according to date then time
-  for (let j = 0; j < arr.length; j++) {
-    if (arr[j].length > 1) {
-      arr[j].sort((a, b) => {
-        if (a.date === b.date) {
-          return +a.startTime.substring(0, 2) === +b.startTime.substring(0, 2) // Check time
-            ? +a.startTime.substring(2, 2) - +b.startTime.substring(2, 2)
-            : +a.startTime.substring(0, 2) - +b.startTime.substring(0, 2);
-        } else {
-          const dateA = convertTimeStringToDate(a.date);
-          const dateB = convertTimeStringToDate(b.date);
+  if (arr.length > 1) {
+    arr.sort((a, b) => {
+      if (a.date === b.date) {
+        return +a.startTime.substring(0, 2) === +b.startTime.substring(0, 2) // Check time
+          ? +a.startTime.substring(2, 2) - +b.startTime.substring(2, 2)
+          : +a.startTime.substring(0, 2) - +b.startTime.substring(0, 2);
+      } else {
+        const dateA = convertTimeStringToDate(a.date);
+        const dateB = convertTimeStringToDate(b.date);
 
-          return isAfter(dateB, dateA) ? -1 : 1;
-        }
-      });
-    }
+        return isAfter(dateB, dateA) ? -1 : 1;
+      }
+    });
   }
 
   return arr;

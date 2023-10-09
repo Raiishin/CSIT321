@@ -17,30 +17,34 @@ import EditExistingUserPage from './components/EditExistingUserPage';
 import useGlobalStore from './store/globalStore';
 import { isUndefined } from 'lodash';
 
+import IdleTimerProvider from './components/IdleTimerProvider';
+
 const App = () => {
   const userId = useGlobalStore(state => state.userId);
 
   return (
-    <div>
-      <Navbar />
+    <IdleTimerProvider>
+      <div>
+        <Navbar />
 
-      <div className="bg-light-brown h-[100vh] w-[100vw]">
-        <Routes>
-          <Route path="/" element={isUndefined(userId) ? <Home /> : <Dashboard />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/login" element={<Login />} />
+        <div className="bg-light-brown h-[100vh]">
+          <Routes>
+            <Route path="/" element={isUndefined(userId) ? <Home /> : <Dashboard />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/login" element={<Login />} />
 
-          <Route path="/timetable" element={<Timetable />} />
-          <Route path="/attendance" element={<Attendance />} />
+            <Route path="/timetable" element={<Timetable />} />
+            <Route path="/attendance" element={<Attendance />} />
 
-          <Route path="/account" element={<EditAccountPage />} />
-          <Route path="/account/create" element={<CreateAccountPage />} />
-          <Route path="/account/edit" element={<EditExistingUserPage />} />
-        </Routes>
+            <Route path="/account" element={<EditAccountPage />} />
+            <Route path="/account/create" element={<CreateAccountPage />} />
+            <Route path="/account/edit" element={<EditExistingUserPage />} />
+          </Routes>
+        </div>
       </div>
-    </div>
+    </IdleTimerProvider>
   );
 };
 
