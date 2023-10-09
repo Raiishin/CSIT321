@@ -35,7 +35,7 @@ const Navbar = () => {
             <img src={LoginImage} alt="LoginImage" class="ml-24 max-w-[20%]" />
           </button>
         </div>
-      )}
+      ) : null}
 
       <div className="basis-full bg-light-brown">
         <nav>
