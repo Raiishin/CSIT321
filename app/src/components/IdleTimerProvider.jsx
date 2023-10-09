@@ -1,28 +1,28 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ConfirmationPopup from './ConfirmationPopup';
 
+import config from '../config/index';
 import useGlobalStore from '../store/globalStore';
 
 const IdleTimerContext = createContext();
 
 const IdleTimerProvider = ({ children }) => {
-  const userId = useGlobalStore(state => state.userId);
-  const idleTimeout = 180000; //3mins
   const [showPopup, setShowPopup] = useState(false);
-  const reset = useGlobalStore(state => state.reset);
 
-  let logoutTimer;
-  let activityTimer;
+  const userId = useGlobalStore(state => state.userId);
+  const reset = useGlobalStore(state => state.reset);
 
   const navigate = useNavigate();
 
+  let activityTimer;
+
   const resetLogoutTimer = () => {
-    clearTimeout(logoutTimer);
     clearTimeout(activityTimer);
+
     activityTimer = setTimeout(() => {
       setShowPopup(true); // Show the popup when idleTimeout occurs
-    }, idleTimeout);
+    }, config.sessionIdleTimeout);
   };
 
   const logout = () => {
@@ -35,8 +35,6 @@ const IdleTimerProvider = ({ children }) => {
   const handleConfirm = () => {
     setShowPopup(false);
     resetLogoutTimer();
-    clearTimeout(logoutTimer);
-    clearTimeout(activityTimer);
   };
 
   const handleLogout = () => {
@@ -55,40 +53,26 @@ const IdleTimerProvider = ({ children }) => {
 
     // Conditionally use the IdleTimerProvider when userId is defined
     if (userId) {
-      activityEvents.forEach((event) => {
+      activityEvents.forEach(event => {
         window.addEventListener(event, handleActivity);
       });
     }
 
     return () => {
-      activityEvents.forEach((event) => {
+      activityEvents.forEach(event => {
         window.removeEventListener(event, handleActivity);
       });
-      clearTimeout(logoutTimer);
       clearTimeout(activityTimer);
       setShowPopup(false);
     };
   }, [userId, navigate]);
 
-  const value = {
-    showPopup,
-    handleConfirm,
-    handleLogout,
-  };
-
-  // Wrap children with IdleTimerProvider only if userId is defined
   return userId ? (
-    <IdleTimerContext.Provider value={value}>
+    <IdleTimerContext.Provider value={{ showPopup, handleConfirm, handleLogout }}>
       {children}
-      {showPopup && (
-        <ConfirmationPopup
-          onCancel={handleLogout}
-          onConfirm={handleConfirm}
-        />
-      )}
+      {showPopup && <ConfirmationPopup onCancel={handleLogout} onConfirm={handleConfirm} />}
     </IdleTimerContext.Provider>
   ) : (
-    // If userId is not defined, render children directly without IdleTimerProvider
     <>{children}</>
   );
 };

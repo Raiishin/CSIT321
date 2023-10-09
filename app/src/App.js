@@ -1,5 +1,5 @@
-import React, { useState, useCallback } from 'react';
-import { Routes, Route, useNavigate, BrowserRouter } from 'react-router-dom';
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -13,7 +13,6 @@ import Timetable from './components/Timetable';
 import CreateAccountPage from './components/CreateAccountPage';
 import EditAccountPage from './components/EditAccountPage';
 import EditExistingUserPage from './components/EditExistingUserPage';
-import ForgetPasswordPage from './components/ForgetPasswordPage';
 
 import useGlobalStore from './store/globalStore';
 import { isUndefined } from 'lodash';
@@ -25,26 +24,26 @@ const App = () => {
 
   return (
     <IdleTimerProvider>
-    <div>
-      <Navbar />
+      <div>
+        <Navbar />
 
-      <div className="bg-light-brown h-[100vh] w-[100vw]">
-        <Routes>
-          <Route path="/" element={isUndefined(userId) ? <Home /> : <Dashboard />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/faq" element={<FAQ />} />
-          <Route path="/login" element={<Login />} />
+        <div className="bg-light-brown h-[100vh]">
+          <Routes>
+            <Route path="/" element={isUndefined(userId) ? <Home /> : <Dashboard />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/login" element={<Login />} />
 
-          <Route path="/timetable" element={<Timetable />} />
-          <Route path="/attendance" element={<Attendance />} />
+            <Route path="/timetable" element={<Timetable />} />
+            <Route path="/attendance" element={<Attendance />} />
 
-          <Route path="/account" element={<EditAccountPage />} />
-          <Route path="/account/create" element={<CreateAccountPage />} />
-          <Route path="/account/edit" element={<EditExistingUserPage />} />
-        </Routes>
+            <Route path="/account" element={<EditAccountPage />} />
+            <Route path="/account/create" element={<CreateAccountPage />} />
+            <Route path="/account/edit" element={<EditExistingUserPage />} />
+          </Routes>
+        </div>
       </div>
-    </div>
     </IdleTimerProvider>
   );
 };
