@@ -10,6 +10,8 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const { previousPath } = useGlobalStore();
+
   const navigate = useNavigate();
 
   const handleLogin = async e => {
@@ -35,20 +37,25 @@ const Login = () => {
             // Pass the options to the authenticator and wait for a response
             await registerUser(userId);
           } else {
-            const verifyAuthenticationResponse = await authenticateUser({userId});
+            const verifyAuthenticationResponse = await authenticateUser({ userId });
 
             if (!verifyAuthenticationResponse.verified) {
               throw new Error('Authentication failed');
             }
           }
           useGlobalStore.setState({ userId, userType, userName });
-
-          return navigate('/');
         }
       }
     } catch (error) {
       console.log(error);
     }
+
+    if (previousPath) {
+      console.log('previousPath ', previousPath);
+      return navigate(previousPath);
+    }
+
+    return navigate('/');
   };
 
   return (

@@ -1,5 +1,8 @@
 import React from 'react';
 import editIcon from '../assets/editing.png';
+import useGlobalStore from '../store/globalStore';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 const EditAccountPage = () => {
   const testData = [
@@ -14,6 +17,19 @@ const EditAccountPage = () => {
     'Tim Cook',
     'Steve Jobs'
   ];
+
+  const navigate = useNavigate();
+  const { userId, setPreviousPath } = useGlobalStore();
+  const previousPath = window.location.pathname;
+
+  useEffect(() => {
+    // if user is not logged in, redirect to login page using Navigate
+    if (userId === undefined) {
+      setPreviousPath(previousPath);
+      console.log('previousPath: ', window.location.pathname);
+      navigate('/login');
+    }
+  }, []);
 
   return (
     <div className="grid grid-cols-3 pt-9 w-full">
