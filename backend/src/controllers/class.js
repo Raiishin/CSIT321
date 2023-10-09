@@ -49,7 +49,9 @@ const index = async (req, res) => {
       const classesQuery = query(classes, where('module_id', '==', moduleId));
       const classesSnapshot = await getDocs(classesQuery);
 
-      const moduleClassesData = classesSnapshot.docs.map(doc => doc.data());
+      const moduleClassesData = classesSnapshot.docs.map(doc => {
+        return { id: doc.id, ...doc.data() };
+      });
 
       // Fetch Lecturer names for each class and add them to classesByModule
       for (const classData of moduleClassesData) {
@@ -61,6 +63,7 @@ const index = async (req, res) => {
 
           // Create a new instance of the Classes class for each class
           const classObj = new Class(
+            classData.id,
             classData.date,
             classData.start_time,
             classData.end_time,
@@ -81,10 +84,13 @@ const index = async (req, res) => {
       }
     }
 
-    const classesByModuleArr = sortClasses(Object.values(classesByModule));
+    const keys = Object.keys(classesByModule);
+    for (let i = 0; i < keys.length; i++) {
+      classesByModule[keys[i]] = sortClasses(classesByModule[keys[i]]);
+    }
 
     // Return the classes data as an array
-    return res.json({ data: classesByModuleArr });
+    return res.json({ data: classesByModule });
   } catch (error) {
     return res.json({ message: error.message });
   }
