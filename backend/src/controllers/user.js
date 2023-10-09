@@ -28,6 +28,8 @@ const app = initializeApp(config.firebaseConfig);
 const db = getFirestore(app);
 const users = collection(db, 'users');
 
+var session;
+
 const index = async (req, res) => {
   const usersSnapshot = await getDocs(users);
   const usersData = usersSnapshot.docs.map(doc => doc.data());
@@ -315,6 +317,22 @@ const login = async (req, res) => {
   }
 };
 
+const createSession = async (req, res) => {
+  session = req.session;
+  session.userid = req.body.username;
+  return res.json({ message: 'Session Variable Set', username : session.userid});
+}
+
+const getSession = async (req, res) => {
+  const username = req.session.username
+  return res.json({ message: 'Session Variable Retrieved', username : username});
+}
+
+const destroySession = async (req, res) => {
+  req.session.destroy();
+  return res.send("Session has been destroyed");
+}
+
 const resetPassword = async (req, res) => {
   let { email, password } = req.body;
 
@@ -370,5 +388,8 @@ export default {
   update,
   destroy,
   login,
-  resetPassword
+  resetPassword,
+  createSession,
+  getSession,
+  destroySession
 };

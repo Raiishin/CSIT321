@@ -8,7 +8,9 @@ import AttendanceLogsController from './src/controllers/attendanceLogs.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
-import rateLimit from 'express-rate-limit';
+import rateLimit from 'express-rate-limit'; 
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -18,6 +20,7 @@ const port = 5001;
 app.use(cors());
 
 app.use(express.json());
+app.use(cookieParser());
 
 const { ENABLE_HTTPS, rpID } = process.env;
 
@@ -42,11 +45,24 @@ const rateLimitConfig = {
   message: 'Too many requests from this IP, please try again later.'
 };
 
+const sessionConf = {
+    secret: 'fyp-23-s3-28',
+    resave: true,
+    saveUninitialized: false,
+    cookie: {
+      secure: false,
+      maxAge: 3600000, // Expire in an hour
+    }
+};
+
 http.createServer(app).listen(port, () => console.log('Application Started at: ' + port));
 
 const router = express.Router();
 
 router.get('/users', rateLimit(rateLimitConfig), UserController.index);
+router.get('/user/getSess', session(sessionConf), UserController.getSession);
+router.get('/user/destroySess', session(sessionConf), UserController.destroySession);
+router.post('/user/createSess', session(sessionConf), UserController.createSession);
 router.post('/user/create', rateLimit(rateLimitConfig), UserController.create);
 router.post('/user/update', rateLimit(rateLimitConfig), UserController.update);
 router.post('/user/login', rateLimit(rateLimitConfig), UserController.login);
