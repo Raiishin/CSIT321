@@ -17,7 +17,8 @@ module.exports = {
         'light-cyan': '#9CFFE7',
         cyan: '#ccd6f6',
         'dark-cyan': '#0e7490',
-        gold: '#D4B238'
+        gold: '#D4B238',
+        'smoke-white': '#F0F8FF'
       }
     }
   },
