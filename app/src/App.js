@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useState, useCallback } from 'react';
+import { Routes, Route, useNavigate, BrowserRouter } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
 import Home from './components/Home';
@@ -13,14 +13,18 @@ import Timetable from './components/Timetable';
 import CreateAccountPage from './components/CreateAccountPage';
 import EditAccountPage from './components/EditAccountPage';
 import EditExistingUserPage from './components/EditExistingUserPage';
+import ForgetPasswordPage from './components/ForgetPasswordPage';
 
 import useGlobalStore from './store/globalStore';
 import { isUndefined } from 'lodash';
+
+import IdleTimerProvider from './components/IdleTimerProvider';
 
 const App = () => {
   const userId = useGlobalStore(state => state.userId);
 
   return (
+    <IdleTimerProvider>
     <div>
       <Navbar />
 
@@ -41,6 +45,7 @@ const App = () => {
         </Routes>
       </div>
     </div>
+    </IdleTimerProvider>
   );
 };
 
