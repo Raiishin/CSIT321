@@ -1,13 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import useGlobalStore from '../store/globalStore';
 
 import SIMLogo from '../assets/SIM-logo.jpg';
 import LoginImage from '../assets/login.jpg';
+import { isUndefined } from 'lodash';
 
 //q: how to use flexbox in tailwind? A: https://tailwindcss.com/docs/flexbox
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { userId } = useGlobalStore();
 
   const NavbarButtons = [
     { name: 'Home', route: '/' },
@@ -26,11 +29,13 @@ const Navbar = () => {
         <h1>SINGAPORE INSTITUTE OF MANAGEMENT</h1>
       </div>
 
-      <div class="p-5 basis-1/5">
-        <button onClick={() => navigate('/login')}>
-          <img src={LoginImage} alt="LoginImage" class="ml-24 max-w-[20%]" />
-        </button>
-      </div>
+      {isUndefined(userId) && (
+        <div class="p-5 basis-1/5">
+          <button onClick={() => navigate('/login')}>
+            <img src={LoginImage} alt="LoginImage" class="ml-24 max-w-[20%]" />
+          </button>
+        </div>
+      )}
 
       <div className="basis-full bg-light-brown">
         <nav>
