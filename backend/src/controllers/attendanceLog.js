@@ -9,6 +9,7 @@ import { getUserById } from '../library/user.js';
 import { getObjectKey, convertTimeStringToDate } from '../library/index.js';
 import errorMessages from '../constants/errorMessages.js';
 import { isUndefined } from 'lodash-es';
+import { userIdSchema } from '../validator/index.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
