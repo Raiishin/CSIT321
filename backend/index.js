@@ -87,6 +87,7 @@ router.delete('/user', rateLimit(rateLimitConfig), UserController.destroy);
 router.get('/classes', rateLimit(rateLimitConfig), ClassController.index);
 
 router.post('/attendance/mark', rateLimit(rateLimitConfig), AttendanceLogController.create);
+router.get('/attendance', rateLimit(rateLimitConfig), AttendanceLogController.getAttendance);
 
 router.get(
   '/generate/registration',

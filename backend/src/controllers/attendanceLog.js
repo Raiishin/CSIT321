@@ -5,10 +5,13 @@ import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebas
 import config from '../config/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
 import { latestClass } from '../library/class.js';
+import { getClassById } from '../library/class.js';
 import { getUserById } from '../library/user.js';
+import { getNoOfUserByMod } from '../library/user.js';
 import { getObjectKey, convertTimeStringToDate } from '../library/index.js';
 import errorMessages from '../constants/errorMessages.js';
 import { isUndefined } from 'lodash-es';
+import { getAttendanceByClassId } from '../library/attendanceLogs.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -76,6 +79,29 @@ const create = async (req, res) => {
   }
 };
 
+const getAttendance = async (req, res) => {
+  const { classId } = req.query;
+
+  try {
+    // Get Class data
+    const classData = await getClassById(classId);
+
+    // Get the total number of users in the module
+    const numberOfUsers = await getNoOfUserByMod(classData.module_id);
+
+    //Get attended users
+    const attendedUsers = await getAttendanceByClassId(classId, false);
+
+    return res.json({
+      attendance: attendedUsers.length + '/' + numberOfUsers,
+      attendanceRate: (attendedUsers.length / numberOfUsers) * 100 + '%'
+    });
+  } catch (error) {
+    return res.json({ message: error.message });
+  }
+};
+
 export default {
-  create
+  create,
+  getAttendance
 };

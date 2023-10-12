@@ -55,3 +55,26 @@ export const getUserByEmail = async (email, throwError = true) => {
 
   return { id: usersData.docs[0].id, ...usersData.docs[0].data() };
 };
+
+/**
+ * @param {string} module_id
+ * @returns an object from firebase
+ * @throws an error message if user is not found
+ */
+export const getNoOfUserByMod = async module_id => {
+  
+  // Get user data
+  const searchQuery = query(users, where('modules', 'array-contains', module_id));
+  const usersData = await getDocs(searchQuery);
+
+  // Check if user exists
+  if (usersData.docs.length === 0) {
+    if (throwError) {
+      throw new Error(errorMessages.USERNOTFOUND);
+    } else {
+      return undefined;
+    }
+  }
+
+  return usersData.docs.length;
+};

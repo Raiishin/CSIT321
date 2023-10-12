@@ -21,6 +21,24 @@ const classes = collection(db, 'classes');
 const modules = collection(db, 'modules');
 const users = collection(db, 'users');
 
+/**
+ * @param {string} classId
+ * @returns an object from firebase
+ * @throws an error message if class is not found
+ */
+export const getClassById = async classId => {
+  // Get user data
+  const classDocRef = doc(classes, classId);
+  const classDocSnapshot = await getDoc(classDocRef);
+
+  // Check if user exists
+  if (!classDocSnapshot.exists()) {
+    throw new Error(errorMessages.CLASSNOTFOUND);
+  }
+
+  return classDocSnapshot.data();
+};
+
 export const sortClasses = classesByModuleArr => {
   const arr = [...classesByModuleArr];
 
