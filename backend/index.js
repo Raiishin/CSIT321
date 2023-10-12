@@ -8,7 +8,7 @@ import AttendanceLogsController from './src/controllers/attendanceLogs.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
-import rateLimit from 'express-rate-limit'; 
+import rateLimit from 'express-rate-limit';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 
@@ -46,13 +46,13 @@ const rateLimitConfig = {
 };
 
 const sessionConf = {
-    secret: 'fyp-23-s3-28',
-    resave: true,
-    saveUninitialized: false,
-    cookie: {
-      secure: true, // Set to true as we are using https
-      maxAge: 3600000, // Expire in an hour
-    }
+  secret: 'fyp-23-s3-28',
+  resave: true,
+  saveUninitialized: false,
+  cookie: {
+    secure: true, // Set to true as we are using https
+    maxAge: 3600000 // Expire in an hour
+  }
 };
 
 http.createServer(app).listen(port, () => console.log('Application Started at: ' + port));
@@ -60,10 +60,20 @@ http.createServer(app).listen(port, () => console.log('Application Started at: '
 const router = express.Router();
 
 router.get('/users', rateLimit(rateLimitConfig), UserController.index);
-router.get('/user/getSess', rateLimit(rateLimitConfig), session(sessionConf), UserController.getSession);
-router.get('/user/checkSess', session(sessionConf), UserController.getSession);
-router.get('/user/destroySess', session(sessionConf), UserController.destroySession);
-router.post('/user/createSess', rateLimit(rateLimitConfig), session(sessionConf), UserController.createSession);
+router.get(
+  '/user/session',
+  rateLimit(rateLimitConfig),
+  session(sessionConf),
+  UserController.getSession
+);
+router.get('/user/session/check', session(sessionConf), UserController.checkSession);
+router.delete('/user/session', session(sessionConf), UserController.destroySession);
+router.post(
+  '/user/session',
+  rateLimit(rateLimitConfig),
+  session(sessionConf),
+  UserController.createSession
+);
 router.post('/user/create', rateLimit(rateLimitConfig), UserController.create);
 router.post('/user/update', rateLimit(rateLimitConfig), UserController.update);
 router.post('/user/login', rateLimit(rateLimitConfig), session(sessionConf), UserController.login);

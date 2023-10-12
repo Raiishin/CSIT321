@@ -323,7 +323,7 @@ const login = async (req, res) => {
           userData.failedLoginAttempts = 0; // Reset failed login attempts count
           userData.is_locked = false;
           await setDoc(userRef, userData);
-          return res.json({ success: result, message: 'Login successful' });
+          return res.json({ success: result, message: 'Login successful', email: session.email });
         } else {
           var failAttempts = userData.failedLoginAttempts + 1; // Update user's fail attempt count
           userData.failedLoginAttempts = failAttempts;
@@ -354,8 +354,8 @@ const checkSession = async (req, res) => {
 };
 
 const getSession = async (req, res) => {
-  const username = req.session.username;
-  return res.json({ message: 'Session Variable Retrieved', username: username });
+  const email = req.session.email;
+  return res.json({ message: 'Session Variable Retrieved', email: email });
 };
 
 const destroySession = async (req, res) => {
