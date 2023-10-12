@@ -50,7 +50,7 @@ const sessionConf = {
     resave: true,
     saveUninitialized: false,
     cookie: {
-      secure: false,
+      secure: true, // Set to true as we are using https
       maxAge: 3600000, // Expire in an hour
     }
 };
@@ -60,12 +60,13 @@ http.createServer(app).listen(port, () => console.log('Application Started at: '
 const router = express.Router();
 
 router.get('/users', rateLimit(rateLimitConfig), UserController.index);
-router.get('/user/getSess', session(sessionConf), UserController.getSession);
+router.get('/user/getSess', rateLimit(rateLimitConfig), session(sessionConf), UserController.getSession);
+router.get('/user/checkSess', session(sessionConf), UserController.getSession);
 router.get('/user/destroySess', session(sessionConf), UserController.destroySession);
-router.post('/user/createSess', session(sessionConf), UserController.createSession);
+router.post('/user/createSess', rateLimit(rateLimitConfig), session(sessionConf), UserController.createSession);
 router.post('/user/create', rateLimit(rateLimitConfig), UserController.create);
 router.post('/user/update', rateLimit(rateLimitConfig), UserController.update);
-router.post('/user/login', rateLimit(rateLimitConfig), UserController.login);
+router.post('/user/login', rateLimit(rateLimitConfig), session(sessionConf), UserController.login);
 router.post('/user/reset-password', rateLimit(rateLimitConfig), UserController.resetPassword);
 router.delete('/user', rateLimit(rateLimitConfig), UserController.destroy);
 

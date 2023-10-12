@@ -1,12 +1,13 @@
 class User {
-  constructor(id, name, password, email, type, isActive, modules) {
+  constructor(id, name, password, email, type, isActive, isLocked, failedLoginAttempts) {
     this.id = id;
     this.name = name;
     this.password = password;
     this.email = email;
     this.type = type;
     this.isActive = isActive;
-    this.modules = modules;
+    this.isLocked = isLocked;
+    this.failedLoginAttempts = failedLoginAttempts;
   }
 
   static get id() {
@@ -29,12 +30,16 @@ class User {
     return this.type;
   }
 
-  static get is_active() {
+  static get isActive() {
     return this.isActive;
   }
 
-  static get modules() {
-    return this.type;
+  static get isLocked() {
+    return this.isLocked;
+  }
+
+  static get failedLoginAttempts() {
+    return this.failedLoginAttempts;
   }
 }
 

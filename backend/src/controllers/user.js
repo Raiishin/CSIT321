@@ -86,6 +86,8 @@ const create = async (req, res) => {
         email,
         type,
         is_active: isActive,
+        is_locked: false,
+        failed_login_attempts: 0,
         modules,
         enrollment_status: enrollmentStatus
       });
@@ -93,55 +95,62 @@ const create = async (req, res) => {
       // Fetch the user data from the newly created user
       const userData = await getUserById(resp.id);
 
-      console.log('userData', userData);
+      // Check if the user exists (userData is not null)
+      if (userData.exists()) {
+        let returnObject;
 
-      let returnObject;
-
-      if (userData.type === userTypeEnum.STUDENT) {
-        // Create a Student object with the retrieved data
-        returnObject = new Student(
-          resp.id,
-          userData.name,
-          userData.password,
-          userData.email,
-          userData.type,
-          userData.is_active,
-          userData.modules,
-          userData.enrollment_status
-        );
-      } else if (userData.type === userTypeEnum.STAFF) {
-        // Create a staff object with the retrieved data
-        returnObject = new Staff(
-          resp.id,
-          userData.name,
-          userData.password,
-          userData.email,
-          userData.type,
-          userData.is_active,
-          userData.modules
-        );
-      } else if (userData.type === userTypeEnum.ADMIN) {
-        // Create an Admin object with the retrieved data
-        returnObject = new Admin(
-          resp.id,
-          userData.name,
-          userData.password,
-          userData.email,
-          userData.type,
-          userData.is_active,
-          userData.modules
-        );
-      } else {
-        // Create a User object with the retrieved data
-        returnObject = new User(
-          resp.id,
-          userData.name,
-          userData.password,
-          userData.email,
-          userData.type,
-          userData.is_active,
-          userData.modules
-        );
+        if (userData.type === userTypeEnum.STUDENT) {
+          // Create a Student object with the retrieved data
+          returnObject = new Student(
+            resp.id,
+            userData.name,
+            userData.password,
+            userData.email,
+            userData.type,
+            userData.is_active,
+            userData.is_locked,
+            userData.failedLoginAttempts,
+            userData.modules,
+            userData.enrollment_status
+          );
+        } else if (userData.type === userTypeEnum.STAFF) {
+          // Create a staff object with the retrieved data
+          returnObject = new Staff(
+            resp.id,
+            userData.name,
+            userData.password,
+            userData.email,
+            userData.type,
+            userData.is_active,
+            userData.is_locked,
+            userData.failedLoginAttempts,
+            userData.modules
+          );
+        } else if (userData.type === userTypeEnum.ADMIN) {
+          // Create an Admin object with the retrieved data
+          returnObject = new Admin(
+            resp.id,
+            userData.name,
+            userData.password,
+            userData.email,
+            userData.type,
+            userData.is_active,
+            userData.is_locked,
+            userData.failedLoginAttempts
+          );
+        } else {
+          // Create a User object with the retrieved data
+          returnObject = new User(
+            resp.id,
+            userData.name,
+            userData.password,
+            userData.email,
+            userData.type,
+            userData.is_active,
+            userData.is_locked,
+            userData.failedLoginAttempts
+          );
+        }
       }
 
       // checks if hashedPassword matches the one stored in DB
@@ -292,22 +301,35 @@ const login = async (req, res) => {
     // Get user data
     const userData = await getUserByEmail(email);
 
-    return bcrypt.compare(password, userData.data.password, async (err, result) => {
+    if (userData.failedLoginAttempts > 4) {
+      // If user fails login more than 5 times, account will be locked
+      userData.is_locked = true;
+      await setDoc(userRef, userData);
+      return res.json({ success: false, message: 'Account is locked' });
+    }
+
+    return bcrypt.compare(password, userData.password, async (err, result) => {
       if (err) {
         console.error('Error comparing passwords:', err);
         return res.json({ success: result, message: err.message });
       }
 
-      // Check if the user is active
-      if (userData.data.is_active) {
+      // Check if the user is active and if account is locked
+      if (userData.is_active && userData.is_locked == false) {
         // Check if passwords match
-        return res.json({
-          success: result,
-          userName: userData.data.name,
-          userId: userData.id,
-          userType: userData.data.type,
-          message: result ? 'Login successful' : errorMessages.INCORRECTPASSWORD
-        });
+        if (result) {
+          session = req.session; // Create session for user
+          session.email = email;
+          userData.failedLoginAttempts = 0; // Reset failed login attempts count
+          userData.is_locked = false;
+          await setDoc(userRef, userData);
+          return res.json({ success: result, message: 'Login successful' });
+        } else {
+          var failAttempts = userData.failedLoginAttempts + 1; // Update user's fail attempt count
+          userData.failedLoginAttempts = failAttempts;
+          await setDoc(userRef, userData);
+          return res.json({ success: result, message: errorMessages.INCORRECTPASSWORD });
+        }
       } else {
         return res.json({ success: result, message: errorMessages.USERISIANCTIVE });
       }
@@ -319,19 +341,27 @@ const login = async (req, res) => {
 
 const createSession = async (req, res) => {
   session = req.session;
-  session.userid = req.body.username;
-  return res.json({ message: 'Session Variable Set', username : session.userid});
-}
+  session.email = req.body.email;
+  return res.json({ message: 'Session Variable Set', email: session.userid });
+};
+
+const checkSession = async (req, res) => {
+  if (req.session && req.session.email) {
+    res.send(true); // A session exists for the user
+  } else {
+    res.send(false); // No session exists for the user
+  }
+};
 
 const getSession = async (req, res) => {
-  const username = req.session.username
-  return res.json({ message: 'Session Variable Retrieved', username : username});
-}
+  const username = req.session.username;
+  return res.json({ message: 'Session Variable Retrieved', username: username });
+};
 
 const destroySession = async (req, res) => {
   req.session.destroy();
-  return res.send("Session has been destroyed");
-}
+  return res.send('Session has been destroyed');
+};
 
 const resetPassword = async (req, res) => {
   let { email, password } = req.body;
@@ -391,5 +421,6 @@ export default {
   resetPassword,
   createSession,
   getSession,
+  checkSession,
   destroySession
 };
