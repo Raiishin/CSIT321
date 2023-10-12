@@ -12,41 +12,44 @@ const EditAccountPage = () => {
   const [emailData, setEmailData] = useState([]);
   const [userData, setUserData] = useState([]);
 
-  useEffect(() => {
-    // Function to fetch user data
-    const getAllUsers = async () => {
-      try {
-        const data = await getAllUserData();
+  // Function to fetch user data
+  const getAllUsers = async () => {
+    try {
+      const data = await getAllUserData();
 
-        // Extract email into an array state
-        const emailData = data.usersData.map(user => user.email);
+      // Extract email into an array state
+      const emailData = data.usersData.map(user => user.email);
 
-        // Extract user data into an array state
-        const usersData = data.usersData.map(user => ({
-          email: user.email,
-          enrollment_status: user.enrollment_status,
-          is_active: user.is_active,
-          modules: user.modules,
-          name: user.name,
-          password: user.password,
-          type: user.type
-        }));
+      // Extract user data into an array state
+      const usersData = data.usersData.map(user => ({
+        email: user.email,
+        enrollment_status: user.enrollment_status,
+        is_active: user.is_active,
+        modules: user.modules,
+        name: user.name,
+        password: user.password,
+        type: user.type
+      }));
 
-        setUserData(usersData);
-        setEmailData(emailData);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
-    // if the user is not logged in, redirect to the login page using Navigate
-    if (userId === undefined) {
-      setPreviousPath(previousPath);
-      navigate('/login');
-    } else {
-      getAllUsers();
+      setUserData(usersData);
+      setEmailData(emailData);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
     }
+  };
+
+  // let data;
+  useEffect(() => {
+    // if the user is not logged in, redirect to the login page using Navigate
+    if (userId === undefined && previousPath !== '/login') {
+      setPreviousPath(previousPath);
+      console.log('redirecting from', previousPath, ' to /login');
+      navigate('/login');
+    }
+
+    console.log('running getAllUsers...');
+    getAllUsers();
   }, [userId, setPreviousPath, navigate, previousPath]);
 
   return (
