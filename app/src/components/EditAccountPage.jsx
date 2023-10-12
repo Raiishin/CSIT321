@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useGlobalStore from '../store/globalStore';
 import editIcon from '../assets/editing.png';
-import { getAllUserData } from '../api/user';
+import { getAllUserData, editUser } from '../api/user';
 
 const EditAccountPage = () => {
   const navigate = useNavigate();
@@ -39,7 +39,6 @@ const EditAccountPage = () => {
     }
   };
 
-  // let data;
   useEffect(() => {
     // if the user is not logged in, redirect to the login page using Navigate
     if (userId === undefined && previousPath !== '/login') {
@@ -48,9 +47,16 @@ const EditAccountPage = () => {
       navigate('/login');
     }
 
-    console.log('running getAllUsers...');
-    getAllUsers();
+    if (userId !== undefined) {
+      console.log('running getAllUsers...');
+      getAllUsers();
+    }
   }, [userId, setPreviousPath, navigate, previousPath]);
+
+  const handleEditButtonClick = userId => {
+    // You need to pass the user ID to the editUser function
+    editUser(userId);
+  };
 
   return (
     <div>
@@ -87,7 +93,7 @@ const EditAccountPage = () => {
                       {emailData[index]}
                     </td>
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
-                      <button>
+                      <button onClick={() => handleEditButtonClick(data.userId)}>
                         <img src={editIcon} alt="editIcon" className="w-6" />
                       </button>
                     </td>
