@@ -58,3 +58,14 @@ export const editUser = async (oldId, updatedUserData) => {
     throw error; // Handle the error as needed
   }
 };
+export const destroySession = async () => {
+  const { data } = await axios.delete(`${config.backendEndpoint}/user/session`);
+
+  return data;
+};
+
+export const destroySession = async () => {
+  const { data } = await axios.delete(`${config.backendEndpoint}/user/session`);
+
+  return data;
+};
