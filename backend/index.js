@@ -3,7 +3,6 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import UserController from './src/controllers/user.js';
 import ClassController from './src/controllers/class.js';
-import AuthController from './src/controllers/auth.js';
 import AttendanceLogsController from './src/controllers/attendanceLogs.js';
 import https from 'https';
 import http from 'http';
@@ -51,7 +50,7 @@ const sessionConf = {
   saveUninitialized: false,
   cookie: {
     secure: true, // Set to true as we are using https
-    maxAge: 3600000 // Expire in an hour
+    maxAge: 60 * 60 * 1000 // Expire in an hour
   }
 };
 
@@ -88,15 +87,15 @@ router.post('/attendance/mark', rateLimit(rateLimitConfig), AttendanceLogsContro
 router.get(
   '/generate/registration',
   rateLimit(rateLimitConfig),
-  AuthController.generateRegistration
+  UserController.generateRegistration
 );
 router.get(
   '/generate/authentication',
   rateLimit(rateLimitConfig),
-  AuthController.generateAuthentication
+  UserController.generateAuthentication
 );
 
-router.post('/verify/registration', rateLimit(rateLimitConfig), AuthController.registerUser);
-router.post('/verify/authentication', rateLimit(rateLimitConfig), AuthController.authenticateUser);
+router.post('/verify/registration', rateLimit(rateLimitConfig), UserController.registerUser);
+router.post('/verify/authentication', rateLimit(rateLimitConfig), UserController.authenticateUser);
 
 app.use('/', router); //to use the routes

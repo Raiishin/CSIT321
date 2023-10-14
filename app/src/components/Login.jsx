@@ -3,25 +3,41 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../api/user';
 import useGlobalStore from '../store/globalStore';
 import { ColorRing } from 'react-loader-spinner';
+import { registerUser, authenticateUser } from '../api/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  const [loading, setLoading] = useState(undefined);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async e => {
     e.preventDefault();
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { id: userId, type: userType, name: userName } = await login(email, password);
+      const { id: userId, type: userType, name: userName, devices } = await login(email, password);
 
-    useGlobalStore.setState({ userId, userType, userName });
+      // Registration
+      if (devices.length === 0) {
+        // Pass the options to the authenticator and wait for a response
+        await registerUser(userId);
+      } else {
+        const verifyAuthenticationResponse = await authenticateUser(userId);
 
-    return navigate('/');
+        if (!verifyAuthenticationResponse.verified) {
+          throw new Error('Authentication failed');
+        }
+      }
+
+      useGlobalStore.setState({ userId, userType, userName });
+
+      return navigate('/');
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
