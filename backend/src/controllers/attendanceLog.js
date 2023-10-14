@@ -92,10 +92,7 @@ const getAttendance = async (req, res) => {
     //Get attended users
     const attendedUsers = await getAttendanceByClassId(classId, false);
 
-    return res.json({
-      attendance: attendedUsers.length + '/' + numberOfUsers,
-      attendanceRate: (attendedUsers.length / numberOfUsers) * 100 + '%'
-    });
+    return res.json({ attendanceMarked: attendedUsers.length, totalUser: numberOfUsers });
   } catch (error) {
     return res.json({ message: error.message });
   }
