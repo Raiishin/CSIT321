@@ -1,43 +1,65 @@
 import config from '../config/index';
+import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+import axios from 'axios';
 
 export const generateRegistration = async userId => {
-  const response = await fetch(`${config.backendEndpoint}/generate/registration?userId=${userId}`);
+  const { data } = await axios.get(`${config.backendEndpoint}/generate/registration`, {
+    params: { userId }
+  });
 
-  const responseJSON = await response.json();
-
-  return responseJSON;
+  return data;
 };
 
 export const generateAuthentication = async userId => {
-  const response = await fetch(
-    `${config.backendEndpoint}/generate/authentication?userId=${userId}`
-  );
+  const { data } = await axios.get(`${config.backendEndpoint}/generate/authentication`, {
+    params: { userId }
+  });
 
-  const responseJSON = await response.json();
-
-  return responseJSON;
+  return data;
 };
 
 export const verifyRegistration = async body => {
-  const response = await fetch(`${config.backendEndpoint}/verify/registration`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body
-  });
+  const { data } = await axios.post(`${config.backendEndpoint}/verify/registration`, body);
 
-  const responseJSON = await response.json();
-
-  return responseJSON;
+  return data;
 };
 
 export const verifyAuthentication = async body => {
-  const response = await fetch(`${config.backendEndpoint}/verify/authentication`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body
-  });
+  const { data } = await axios.post(`${config.backendEndpoint}/verify/authentication`, body);
 
-  const responseJSON = await response.json();
+  return data;
+};
 
-  return responseJSON;
+export const registerUser = async (userId, setRegistrationStatus = () => {}) => {
+  const generatedRegistration = await generateRegistration(userId);
+
+  // Pass the options to the authenticator and wait for a response
+  const registrationResponse = await startRegistration(generatedRegistration);
+
+  setRegistrationStatus('registration in progress');
+
+  const verifyRegistrationBody = {
+    ...registrationResponse,
+    userId,
+    expectedChallenge: generatedRegistration.challenge
+  };
+
+  return await verifyRegistration(verifyRegistrationBody);
+};
+
+export const authenticateUser = async (userId, setAuthenticationStatus = () => {}) => {
+  const generatedAuthentication = await generateAuthentication(userId);
+
+  // Pass the options to the authenticator and wait for a response
+  const authenticationResponse = await startAuthentication(generatedAuthentication);
+
+  setAuthenticationStatus('authentication in progress');
+
+  const verifyAuthenticationBody = {
+    ...authenticationResponse,
+    userId,
+    expectedChallenge: generatedAuthentication.challenge
+  };
+
+  return await verifyAuthentication(verifyAuthenticationBody);
 };
