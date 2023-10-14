@@ -551,7 +551,7 @@ const login = async (req, res) => {
     const userData = userDocSnapshot.data();
 
     // If user fails login more than 5 times, account will be locked
-    if (userData.failed_login_attempts > 5) {
+    if (userData.failed_login_attempts > 4) {
       userData.is_locked = true;
 
       await setDoc(userDocRef, userData);
