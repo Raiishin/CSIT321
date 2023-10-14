@@ -67,13 +67,14 @@ router.get(
   UserController.getSession
 );
 router.get('/user/session/check', session(sessionConf), UserController.checkSession);
-router.delete('/user/session', session(sessionConf), UserController.destroySession);
 router.post(
   '/user/session',
   rateLimit(rateLimitConfig),
   session(sessionConf),
   UserController.createSession
 );
+router.delete('/user/session', session(sessionConf), UserController.destroySession);
+
 router.post('/user/create', rateLimit(rateLimitConfig), UserController.create);
 router.post('/user/update', rateLimit(rateLimitConfig), UserController.update);
 router.post('/user/login', rateLimit(rateLimitConfig), session(sessionConf), UserController.login);

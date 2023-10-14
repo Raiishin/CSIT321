@@ -28,8 +28,6 @@ const app = initializeApp(config.firebaseConfig);
 const db = getFirestore(app);
 const users = collection(db, 'users');
 
-var session;
-
 const index = async (req, res) => {
   const usersSnapshot = await getDocs(users);
   const usersData = usersSnapshot.docs.map(doc => doc.data());
@@ -95,10 +93,10 @@ const create = async (req, res) => {
       // Fetch the user data from the newly created user
       const userData = await getUserById(resp.id);
 
+      let returnObject;
+
       // Check if the user exists (userData is not null)
       if (userData.exists()) {
-        let returnObject;
-
         if (userData.type === userTypeEnum.STUDENT) {
           // Create a Student object with the retrieved data
           returnObject = new Student(
@@ -109,7 +107,7 @@ const create = async (req, res) => {
             userData.type,
             userData.is_active,
             userData.is_locked,
-            userData.failedLoginAttempts,
+            userData.failed_login_attempts,
             userData.modules,
             userData.enrollment_status
           );
@@ -123,7 +121,7 @@ const create = async (req, res) => {
             userData.type,
             userData.is_active,
             userData.is_locked,
-            userData.failedLoginAttempts,
+            userData.failed_login_attempts,
             userData.modules
           );
         } else if (userData.type === userTypeEnum.ADMIN) {
@@ -136,7 +134,7 @@ const create = async (req, res) => {
             userData.type,
             userData.is_active,
             userData.is_locked,
-            userData.failedLoginAttempts
+            userData.failed_login_attempts
           );
         } else {
           // Create a User object with the retrieved data
@@ -148,7 +146,7 @@ const create = async (req, res) => {
             userData.type,
             userData.is_active,
             userData.is_locked,
-            userData.failedLoginAttempts
+            userData.failed_login_attempts
           );
         }
       }
@@ -221,22 +219,26 @@ const update = async (req, res) => {
       returnObject = new Student(
         id,
         updatedUserData.name,
-        updatedUserData.email,
         updatedUserData.password,
+        updatedUserData.email,
         updatedUserData.type,
         updatedUserData.is_active,
+        updatedUserData.is_locked,
+        updatedUserData.failed_login_attempts,
         updatedUserData.modules,
-        updatedUserData.enrollmentStatus
+        updatedUserData.enrollment_status
       );
     } else if (data.type === userTypeEnum.STAFF) {
       // Create a staff object with the retrieved data
       returnObject = new Staff(
         id,
         updatedUserData.name,
-        updatedUserData.email,
         updatedUserData.password,
+        updatedUserData.email,
         updatedUserData.type,
         updatedUserData.is_active,
+        updatedUserData.is_locked,
+        updatedUserData.failed_login_attempts,
         updatedUserData.modules
       );
     } else if (updatedUserData.type === userTypeEnum.ADMIN) {
@@ -244,22 +246,24 @@ const update = async (req, res) => {
       returnObject = new Admin(
         id,
         updatedUserData.name,
-        updatedUserData.email,
         updatedUserData.password,
+        updatedUserData.email,
         updatedUserData.type,
         updatedUserData.is_active,
-        updatedUserData.modules
+        updatedUserData.is_locked,
+        updatedUserData.failed_login_attempts
       );
     } else {
       // Create a User object with the retrieved data
       returnObject = new User(
         id,
         updatedUserData.name,
-        updatedUserData.email,
         updatedUserData.password,
+        updatedUserData.email,
         updatedUserData.type,
         updatedUserData.is_active,
-        updatedUserData.modules
+        updatedUserData.is_locked,
+        updatedUserData.failed_login_attempts
       );
     }
 
@@ -295,71 +299,84 @@ const destroy = async (req, res) => {
 
 // Returns an additional response key (success: Boolean!)
 const login = async (req, res) => {
-  let { email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Get user data
-    const userData = await getUserByEmail(email);
+    const { id } = await getUserByEmail(email);
 
-    if (userData.failedLoginAttempts > 4) {
-      // If user fails login more than 5 times, account will be locked
+    const userDocRef = doc(users, id);
+    const userDocSnapshot = await getDoc(userDocRef);
+    const userData = userDocSnapshot.data();
+
+    // If user fails login more than 5 times, account will be locked
+    if (userData.failed_login_attempts > 5) {
       userData.is_locked = true;
-      await setDoc(userRef, userData);
-      return res.json({ success: false, message: 'Account is locked' });
+
+      await setDoc(userDocRef, userData);
+
+      return res.json({ success: false, message: errorMessages.ACCOUNTLOCKED });
     }
 
-    return bcrypt.compare(password, userData.password, async (err, result) => {
-      if (err) {
-        console.error('Error comparing passwords:', err);
-        return res.json({ success: result, message: err.message });
-      }
+    console.log('userData', userData);
+    if (userData.is_active && !userData.is_locked) {
+      return bcrypt.compare(password, userData.password, async (err, result) => {
+        if (err) {
+          console.error('Error comparing passwords:', err);
+          throw new Error(err);
+        }
 
-      // Check if the user is active and if account is locked
-      if (userData.is_active && userData.is_locked == false) {
+        // Check if the user is active and if account is locked
         // Check if passwords match
         if (result) {
-          session = req.session; // Create session for user
+          const session = req.session; // Create session for user
           session.email = email;
-          userData.failedLoginAttempts = 0; // Reset failed login attempts count
+
+          userData.failed_login_attempts = 0; // Reset failed login attempts count
           userData.is_locked = false;
-          await setDoc(userRef, userData);
-          return res.json({ success: result, message: 'Login successful', email: session.email });
+
+          await setDoc(userDocRef, userData);
+
+          return res.json({
+            success: result,
+            message: 'Login successful',
+            ...userData,
+            id: userDocSnapshot.id
+          });
         } else {
-          var failAttempts = userData.failedLoginAttempts + 1; // Update user's fail attempt count
-          userData.failedLoginAttempts = failAttempts;
-          await setDoc(userRef, userData);
+          userData.failed_login_attempts = userData.failed_login_attempts + 1;
+
+          await setDoc(userDocRef, userData);
+
           return res.json({ success: result, message: errorMessages.INCORRECTPASSWORD });
         }
-      } else {
-        return res.json({ success: result, message: errorMessages.USERISIANCTIVE });
-      }
-    });
+      });
+    } else {
+      return res.json({ success: false, message: errorMessages.USERISIANCTIVE });
+    }
   } catch (error) {
     return res.json({ success: false, message: error.message });
   }
 };
 
 const createSession = async (req, res) => {
-  session = req.session;
+  const session = req.session;
   session.email = req.body.email;
+
   return res.json({ message: 'Session Variable Set', email: session.userid });
 };
 
 const checkSession = async (req, res) => {
-  if (req.session && req.session.email) {
-    res.send(true); // A session exists for the user
-  } else {
-    res.send(false); // No session exists for the user
-  }
+  return res.send(req.session && req.session.email);
 };
 
 const getSession = async (req, res) => {
-  const email = req.session.email;
-  return res.json({ message: 'Session Variable Retrieved', email: email });
+  return res.json({ message: 'Session Variable Retrieved', email: req.session.email });
 };
 
 const destroySession = async (req, res) => {
   req.session.destroy();
+
   return res.send('Session has been destroyed');
 };
 

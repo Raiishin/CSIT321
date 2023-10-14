@@ -17,7 +17,7 @@ const Login = () => {
 
     setLoading(true);
 
-    const { userId, userType, userName } = await login(email, password);
+    const { id: userId, type: userType, name: userName } = await login(email, password);
 
     useGlobalStore.setState({ userId, userType, userName });
 
@@ -71,8 +71,7 @@ const Login = () => {
             <div className="mb-4 pt-5">
               <button
                 type="submit"
-                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded"
-              >
+                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded">
                 Login
               </button>
             </div>

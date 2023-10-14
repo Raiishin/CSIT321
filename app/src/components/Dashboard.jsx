@@ -10,10 +10,11 @@ import logoutImage from '../assets/logout.jpg';
 import createAccountImage from '../assets/create-new-accounts.jpg';
 import editAccountImage from '../assets/edit-accounts.jpg';
 
+import { destroySession } from '../api/user';
+
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const userId = useGlobalStore(state => state.userId);
   const userType = useGlobalStore(state => state.userType);
   const userName = useGlobalStore(state => state.userName);
   const reset = useGlobalStore(state => state.reset);
@@ -55,11 +56,11 @@ const Dashboard = () => {
 
         <div className="p-4 items-center justify-center">
           <button
-            onClick={() => {
+            onClick={async () => {
               reset();
               navigate('/');
-            }}
-          >
+              await destroySession();
+            }}>
             <img src={logoutImage} alt="logoutImage" class="w-40" />
           </button>
         </div>
