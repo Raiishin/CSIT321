@@ -1,6 +1,6 @@
 import { differenceInMinutes, isBefore, isAfter } from 'date-fns';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc } from 'firebase/firestore/lite';
+import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
 import { latestClass } from '../library/class.js';
@@ -27,6 +27,16 @@ const create = async (req, res) => {
     // Retrieve latest class
     const userLatestClass = await latestClass(moduleIds);
     console.log('userLatestClass', userLatestClass);
+
+    // Check if class is already marked
+    const attendanceLogsQuery = query(attendanceLogs, where('classId', '==', userLatestClass.id));
+    const attendanceLogsSnapshot = await getDocs(attendanceLogsQuery);
+
+    attendanceLogsSnapshot.docs.map(doc => {
+      if (doc.exists()) {
+        throw new Error(errorMessages.ATTENDANCEMARKED);
+      }
+    });
 
     // Check if now is within the time frame of 30 minutes before class start to class end
     const now = new Date();

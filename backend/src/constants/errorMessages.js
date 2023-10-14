@@ -5,5 +5,6 @@ export default {
   EMAILINUSE: 'This email is already in use with another account',
   INCORRECTPASSWORD: 'Incorrect password',
   UNABLETOMARKATTENDANCE: 'You cannot mark attendance for this class',
-  ACCOUNTLOCKED: 'Account is locked. Contact admin for support'
+  ACCOUNTLOCKED: 'Account is locked. Contact admin for support',
+  ATTENDANCEMARKED: 'Attendance for this class has already been marked'
 };

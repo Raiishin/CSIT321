@@ -10,7 +10,7 @@ import {
 } from 'firebase/firestore/lite';
 import Class from '../models/class.js';
 import config from '../config/index.js';
-import { isAfter } from 'date-fns';
+import { isAfter, isBefore, isSameDay } from 'date-fns';
 import { convertTimeStringToDate } from './index.js';
 
 // Initialize Firebase
@@ -89,5 +89,23 @@ export const latestClass = async moduleIds => {
 
   const sortedClassesData = sortClasses(Object.values(classesData));
 
-  return sortedClassesData[0];
+  // Get the first class that falls after today
+  const now = new Date();
+
+  let latestClass;
+
+  for (let i = 0; i < sortedClassesData.length; i++) {
+    const classData = sortedClassesData[i];
+
+    if (
+      (isSameDay(convertTimeStringToDate(classData.date), now) &&
+        isBefore(now, convertTimeStringToDate(classData.date, classData.endTime))) ||
+      isAfter(convertTimeStringToDate(classData.date, classData.startTime), now)
+    ) {
+      latestClass = classData;
+      break;
+    }
+  }
+
+  return latestClass;
 };
