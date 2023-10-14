@@ -50,11 +50,6 @@ const Login = () => {
       console.log(error);
     }
 
-    if (previousPath) {
-      console.log('previousPath ', previousPath);
-      return navigate(previousPath);
-    }
-
     return navigate('/');
   };
 
