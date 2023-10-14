@@ -22,7 +22,7 @@ const attendanceLogs = collection(db, 'attendance_logs');
  * @returns an object from firebase
  * @throws an error message if attendance is not found
  */
-export const getAttendanceByClassId = async (classId, throwError) => {
+export const getAttendanceByClassId = async classId => {
 
     //Get Attended students
     const searchQuery = query(attendanceLogs, where('classId', '==', classId));
@@ -30,11 +30,7 @@ export const getAttendanceByClassId = async (classId, throwError) => {
 
     // Check if user exists
     if (attendanceData.docs.length === 0) {
-        if (throwError) {
-        throw new Error(errorMessages.ATTENDANCENOTFOUND);
-        } else {
         return [];
-        }
     }
 
     // Extract user IDs from the attendance data and return them as an array with duplicates removed

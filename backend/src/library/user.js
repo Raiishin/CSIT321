@@ -64,7 +64,7 @@ export const getUserByEmail = async (email, throwError = true) => {
 export const getNoOfUserByMod = async module_id => {
   
   // Get user data
-  const searchQuery = query(users, where('modules', 'array-contains', module_id));
+  const searchQuery = query(users, where('modules', 'array-contains', module_id), where('type', '==', 0));
   const usersData = await getDocs(searchQuery);
 
   // Check if user exists

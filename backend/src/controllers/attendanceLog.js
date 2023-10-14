@@ -90,11 +90,11 @@ const getAttendance = async (req, res) => {
     const numberOfUsers = await getNoOfUserByMod(classData.module_id);
 
     //Get attended users
-    const attendedUsers = await getAttendanceByClassId(classId, false);
+    const attendedUsers = await getAttendanceByClassId(classId);
 
     return res.json({ attendanceMarked: attendedUsers.length, totalUser: numberOfUsers });
   } catch (error) {
-    return res.json({ message: error.message });
+    return res.json({ message: "Class Id not found" });
   }
 };
 
