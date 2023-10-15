@@ -9,6 +9,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   const navigate = useNavigate();
 
@@ -26,6 +27,13 @@ const Login = () => {
       } else {
         const { id: userId, type: userType, name: userName, devices } = loginResponse;
 
+        if (password.length < 8) {
+          setPasswordError('Password must be at least 8 characters long');
+          return;
+        } else {
+          setPasswordError(''); // Clear the error message
+        }
+        
         // Registration
         if (devices.length === 0) {
           // Pass the options to the authenticator and wait for a response
@@ -37,7 +45,6 @@ const Login = () => {
             throw new Error('Authentication failed');
           }
         }
-
         useGlobalStore.setState({ userId, userType, userName });
 
         return navigate('/');
@@ -77,7 +84,7 @@ const Login = () => {
               />
             </div>
 
-            <div className="mb-4">
+            <div className={`mb-4 ${passwordError ? 'border-red-500' : ''}`}>
               <label htmlFor="password" className="block text-gray-700 font-bold mb-2">
                 Password
               </label>
@@ -85,11 +92,15 @@ const Login = () => {
                 type="password"
                 id="password"
                 required
-                className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${
+                  passwordError ? 'border-red-500' : ''
+                }`}
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+
+            <div className="text-red-500">{passwordError}</div>
 
             <div className="mb-4 pt-5">
               <button
