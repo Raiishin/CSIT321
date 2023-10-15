@@ -1,16 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../api/user';
+import useGlobalStore from '../store/globalStore';
+import { ColorRing } from 'react-loader-spinner';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errors, setErrors] = useState({});
+
+  const [loading, setLoading] = useState(undefined);
+
   const navigate = useNavigate();
+
+  const [errors, setErrors] = useState({});
 
   const handleLogin = async e => {
     e.preventDefault();
 
-    // Perform form validation here
+    setLoading(true);
+
+    const { userId, userType, userName } = await login(email, password);
+
+    useGlobalStore.setState({ userId, userType, userName });
+
     const validationErrors = {};
 
     if (!email.match(/^\S+@\S+\.\S+$/)) {
@@ -18,16 +30,15 @@ const Login = () => {
     }
 
     if (password.length < 8) {
-      validationErrors.password = 'Invalid password.';
+      validationErrors.password = 'Password must be at least 8 characters.';
     }
 
-    if (Object.keys(validationErrors).length === 0) {
-      // If there are no validation errors, you can proceed with the form submission
-      // Call your API or perform any other necessary action here
-    } else {
+    else {
       // If there are validation errors, update the state to display error messages
       setErrors(validationErrors);
     }
+
+    return navigate('/');
   };
 
   return (
