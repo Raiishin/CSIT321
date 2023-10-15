@@ -12,7 +12,7 @@ import Attendance from './components/Attendance';
 import Timetable from './components/Timetable';
 import CreateAccountPage from './components/CreateAccountPage';
 import EditAccountPage from './components/EditAccountPage';
-import EditExistingUserPage from './components/EditExistingUserPage';
+import EditUser from './components/EditUser';
 
 import useGlobalStore from './store/globalStore';
 import { isUndefined } from 'lodash';
@@ -42,7 +42,7 @@ const App = () => {
 
             <Route path="/account" element={<EditAccountPage />} />
             <Route path="/account/create" element={<CreateAccountPage />} />
-            <Route path="/account/edit" element={<EditExistingUserPage />} />
+            <Route path="/account/edit" element={<EditUser />} />
           </Routes>
         </div>
       </div>

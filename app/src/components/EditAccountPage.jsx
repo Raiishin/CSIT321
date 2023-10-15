@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import useGlobalStore from '../store/globalStore';
 import editIcon from '../assets/editing.png';
-import { getAllUserData, editUser } from '../api/user';
+import { getAllUserData } from '../api/user';
+import EditUser from './EditUser';
 
 const EditAccountPage = () => {
   const navigate = useNavigate();
@@ -22,12 +23,13 @@ const EditAccountPage = () => {
 
       // Extract user data into an array state
       const usersData = data.usersData.map(user => ({
-        email: user.email,
-        enrollment_status: user.enrollment_status,
-        is_active: user.is_active,
-        modules: user.modules,
+        id: user.id,
         name: user.name,
         password: user.password,
+        email: user.email,
+        is_active: user.is_active,
+        modules: user.modules,
+        enrollment_status: user.enrollment_status,
         type: user.type
       }));
 
@@ -53,9 +55,9 @@ const EditAccountPage = () => {
     }
   }, [userId, setPreviousPath, navigate, previousPath]);
 
-  const handleEditButtonClick = userId => {
-    // You need to pass the user ID to the editUser function
-    editUser(userId);
+  const handleEditButtonClick = data => {
+    // Instead of using states, directly render the EditUser component
+    console.log('edit button clicked', data);
   };
 
   return (
@@ -70,7 +72,8 @@ const EditAccountPage = () => {
             <p className="text-[#ccd6f6] text-4xl font-bold">Edit Accounts</p>
           </div>
 
-          <div className="w-[90%] col-span-3 max-h-[60%] overscroll-auto overflow-y-auto mt-24 ml-20">
+          <div
+            className={`w-[90%] col-span-3 max-h-[60%] overscroll-auto overflow-y-auto mt-24 ml-20`}>
             <table className="border-collapse bg-gray-50 border-b-2 border-slate-500 w-[100%] font-sans">
               <thead className="bg-[#dcdcdc]">
                 <tr>
@@ -93,9 +96,11 @@ const EditAccountPage = () => {
                       {emailData[index]}
                     </td>
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
-                      <button onClick={() => handleEditButtonClick(data.userId)}>
-                        <img src={editIcon} alt="editIcon" className="w-6" />
-                      </button>
+                      <Link to="/account/edit" state={{ data }}>
+                        <button>
+                          <img src={editIcon} alt="editIcon" className="w-6" />
+                        </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}
