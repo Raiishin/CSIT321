@@ -27,18 +27,18 @@ const Login = () => {
 
     if (!email.match(/^\S+@\S+\.\S+$/)) {
       validationErrors.email = 'Invalid email address.';
+      setErrors(validationErrors);
     }
 
     if (password.length < 8) {
       validationErrors.password = 'Password must be at least 8 characters.';
-    }
-
-    else {
-      // If there are validation errors, update the state to display error messages
       setErrors(validationErrors);
     }
 
-    return navigate('/');
+    else {
+      return navigate('/');
+    }
+
   };
 
   return (
