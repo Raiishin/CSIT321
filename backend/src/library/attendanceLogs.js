@@ -1,13 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  doc,
-  getDoc,
-  query,
-  where
-} from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 
 // Initialize Firebase
@@ -16,25 +8,27 @@ const db = getFirestore(app);
 
 const attendanceLogs = collection(db, 'attendance_logs');
 
-
 /**
  * @param {string} classId
- * @returns an object from firebase
+ * @returns an array of attendance objects from firebase
  * @throws an error message if attendance is not found
  */
 export const getAttendanceByClassId = async classId => {
+  const searchQuery = query(attendanceLogs, where('classId', '==', classId));
+  const attendanceData = (await getDocs(searchQuery)).docs.map(doc => {
+    return { id: doc.id, ...doc.data() };
+  });
 
-    //Get Attended students
-    const searchQuery = query(attendanceLogs, where('classId', '==', classId));
-    const attendanceData = await getDocs(searchQuery); 
+  const uniqueUserIds = {};
+  const resultArray = [];
 
-    // Check if user exists
-    if (attendanceData.docs.length === 0) {
-        return [];
+  // Dedupe the attendanceData based on userId
+  for (const obj of attendanceData) {
+    if (!uniqueUserIds[obj.userId]) {
+      uniqueUserIds[obj.userId] = true;
+      resultArray.push(obj);
     }
+  }
 
-    // Extract user IDs from the attendance data and return them as an array with duplicates removed
-    const userIds = Array.from(new Set(attendanceData.docs.map((doc) => doc.data().userId)));
-    return userIds;
-
+  return resultArray;
 };

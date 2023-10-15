@@ -4,10 +4,8 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
-import { latestClass } from '../library/class.js';
-import { getClassById } from '../library/class.js';
-import { getUserById } from '../library/user.js';
-import { getNoOfUserByMod } from '../library/user.js';
+import { getClassById, latestClass } from '../library/class.js';
+import { getUserById, getTotalStudentsByModuleId } from '../library/user.js';
 import { getObjectKey, convertTimeStringToDate } from '../library/index.js';
 import errorMessages from '../constants/errorMessages.js';
 import { isUndefined } from 'lodash-es';
@@ -79,7 +77,7 @@ const create = async (req, res) => {
   }
 };
 
-const getAttendance = async (req, res) => {
+const view = async (req, res) => {
   const { classId } = req.query;
 
   try {
@@ -87,18 +85,18 @@ const getAttendance = async (req, res) => {
     const classData = await getClassById(classId);
 
     // Get the total number of users in the module
-    const numberOfUsers = await getNoOfUserByMod(classData.module_id);
+    const totalStudents = await getTotalStudentsByModuleId(classData.module_id);
 
-    //Get attended users
-    const attendedUsers = await getAttendanceByClassId(classId);
+    // Get attended users
+    const attendedStudents = await getAttendanceByClassId(classId);
 
-    return res.json({ attendanceMarked: attendedUsers.length, totalUser: numberOfUsers });
+    return res.json({ attendanceMarked: attendedStudents.length, totalStudents });
   } catch (error) {
-    return res.json({ message: "Class Id not found" });
+    return res.json({ message: error.message });
   }
 };
 
 export default {
   create,
-  getAttendance
+  view
 };

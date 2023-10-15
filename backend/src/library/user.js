@@ -9,6 +9,7 @@ import {
   where
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
+import userTypeEnum from '../constants/userTypeEnum.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -19,7 +20,7 @@ const users = collection(db, 'users');
 /**
  * @param {string} userId
  * @returns an object from firebase
- * @throws an error message if user is not found
+ * @throws an error message if no user is found
  */
 export const getUserById = async userId => {
   // Get user data
@@ -37,7 +38,7 @@ export const getUserById = async userId => {
 /**
  * @param {string} email
  * @returns an object from firebase
- * @throws an error message if user is not found
+ * @throws an error message if no user is found
  */
 export const getUserByEmail = async (email, throwError = true) => {
   // Get user data
@@ -57,23 +58,22 @@ export const getUserByEmail = async (email, throwError = true) => {
 };
 
 /**
- * @param {string} module_id
+ * @param {string} moduleId
  * @returns an object from firebase
- * @throws an error message if user is not found
+ * @throws an error message if no users are found
  */
-export const getNoOfUserByMod = async module_id => {
-  
+export const getTotalStudentsByModuleId = async moduleId => {
   // Get user data
-  const searchQuery = query(users, where('modules', 'array-contains', module_id), where('type', '==', 0));
+  const searchQuery = query(
+    users,
+    where('modules', 'array-contains', moduleId),
+    where('type', '==', userTypeEnum.STUDENT)
+  );
   const usersData = await getDocs(searchQuery);
 
   // Check if user exists
   if (usersData.docs.length === 0) {
-    if (throwError) {
-      throw new Error(errorMessages.USERNOTFOUND);
-    } else {
-      return undefined;
-    }
+    throw new Error(errorMessages.USERNOTFOUND);
   }
 
   return usersData.docs.length;

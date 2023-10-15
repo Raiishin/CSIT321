@@ -12,6 +12,7 @@ import Class from '../models/class.js';
 import config from '../config/index.js';
 import { isAfter, isBefore, isSameDay } from 'date-fns';
 import { convertTimeStringToDate } from './index.js';
+import errorMessages from '../constants/errorMessages.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);

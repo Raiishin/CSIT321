@@ -8,5 +8,6 @@ export default {
   ACCOUNTLOCKED: 'Account is locked. Contact admin for support',
   ATTENDANCEMARKED: 'Attendance for this class has already been marked',
   NOCLASSESAVAILABLE: "You don't have any more classes to attend for this semester",
-  USERUPDATEFAILED: 'User update failed'
+  USERUPDATEFAILED: 'User update failed',
+  CLASSNOTFOUND: 'Class ID is not found'
 };
