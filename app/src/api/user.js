@@ -63,9 +63,3 @@ export const destroySession = async () => {
 
   return data;
 };
-
-export const destroySession = async () => {
-  const { data } = await axios.delete(`${config.backendEndpoint}/user/session`);
-
-  return data;
-};
