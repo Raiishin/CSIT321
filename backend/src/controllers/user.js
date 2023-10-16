@@ -116,9 +116,15 @@ const generateRegistration = async (req, res) => {
 };
 
 const generateAuthentication = async (req, res) => {
-  const { userId } = req.query;
-
   try {
+    let userId = req.query?.userId ?? '';
+
+    if (!isUndefined(req.query.email)) {
+      const userData = await getUserByEmail(req.query.email);
+
+      userId = userData.id;
+    }
+
     // Query for user from firebase
     // const usersData = await getDoc(doc(db, 'users', userId));
 
@@ -211,62 +217,72 @@ const registerUser = async (req, res) => {
 };
 
 const authenticateUser = async (req, res) => {
-  const { expectedChallenge, userId, ...body } = req.body;
-
-  // Query for user from firebase
-  // const usersData = await getDoc(doc(db, 'users', userId));
-
-  // const user = usersData.data();
-
-  // const devices = JSON.parse(user.devices);
-
-  const user = inMemoryUserDeviceDB[userId];
-
-  const { devices } = user;
-
-  let dbAuthenticator;
-  const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
-
-  // "Query the DB" here for an authenticator matching `credentialID`
-  for (const dev of devices) {
-    if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
-      dbAuthenticator = dev;
-      break;
-    }
-  }
-
-  if (isUndefined(dbAuthenticator)) {
-    return res
-      .status(400)
-      .send({ error: { message: 'Authenticator is not registered with this site' } });
-  }
-
-  let verification;
   try {
-    const opts = {
-      response: body,
-      expectedChallenge: `${expectedChallenge}`,
-      expectedOrigin,
-      expectedRPID: rpID,
-      authenticator: dbAuthenticator,
-      requireUserVerification: true
-    };
-    verification = await verifyAuthenticationResponse(opts);
+    const { expectedChallenge, ...body } = req.body;
+
+    let userId = body?.userId ?? '';
+
+    if (!isUndefined(body.email)) {
+      const userData = await getUserByEmail(body.email);
+
+      userId = userData.id;
+    }
+
+    // Query for user from firebase
+    // const usersData = await getDoc(doc(db, 'users', userId));
+
+    // const user = usersData.data();
+
+    // const devices = JSON.parse(user.devices);
+
+    const user = inMemoryUserDeviceDB[userId];
+
+    const { devices } = user;
+
+    let dbAuthenticator;
+    const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
+
+    // "Query the DB" here for an authenticator matching `credentialID`
+    for (const dev of devices) {
+      if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
+        dbAuthenticator = dev;
+        break;
+      }
+    }
+
+    if (isUndefined(dbAuthenticator)) {
+      return res
+        .status(400)
+        .send({ error: { message: 'Authenticator is not registered with this site' } });
+    }
+
+    let verification;
+    try {
+      const opts = {
+        response: body,
+        expectedChallenge: `${expectedChallenge}`,
+        expectedOrigin,
+        expectedRPID: rpID,
+        authenticator: dbAuthenticator,
+        requireUserVerification: true
+      };
+      verification = await verifyAuthenticationResponse(opts);
+    } catch (error) {
+      console.error(error);
+      return res.status(400).send({ error: error.message });
+    }
+
+    const { verified, authenticationInfo } = verification;
+
+    if (verified) {
+      // Update the authenticator's counter in the DB to the newest count in the authentication
+      dbAuthenticator.counter = authenticationInfo.newCounter;
+    }
+
+    return res.send({ verified });
   } catch (error) {
-    console.error(error);
-    return res.status(400).send({ error: error.message });
+    console.log(error);
   }
-
-  // console.log('verification', verification);
-
-  const { verified, authenticationInfo } = verification;
-
-  if (verified) {
-    // Update the authenticator's counter in the DB to the newest count in the authentication
-    dbAuthenticator.counter = authenticationInfo.newCounter;
-  }
-
-  return res.send({ verified });
 };
 
 const index = async (req, res) => {
@@ -337,59 +353,57 @@ const create = async (req, res) => {
       let returnObject;
 
       // Check if the user exists (userData is not null)
-      if (userData.exists()) {
-        if (userData.type === userTypeEnum.STUDENT) {
-          // Create a Student object with the retrieved data
-          returnObject = new Student(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts,
-            userData.modules,
-            userData.enrollment_status
-          );
-        } else if (userData.type === userTypeEnum.STAFF) {
-          // Create a staff object with the retrieved data
-          returnObject = new Staff(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts,
-            userData.modules
-          );
-        } else if (userData.type === userTypeEnum.ADMIN) {
-          // Create an Admin object with the retrieved data
-          returnObject = new Admin(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts
-          );
-        } else {
-          // Create a User object with the retrieved data
-          returnObject = new User(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts
-          );
-        }
+      if (userData.type === userTypeEnum.STUDENT) {
+        // Create a Student object with the retrieved data
+        returnObject = new Student(
+          resp.id,
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts,
+          userData.modules,
+          userData.enrollment_status
+        );
+      } else if (userData.type === userTypeEnum.STAFF) {
+        // Create a staff object with the retrieved data
+        returnObject = new Staff(
+          resp.id,
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts,
+          userData.modules
+        );
+      } else if (userData.type === userTypeEnum.ADMIN) {
+        // Create an Admin object with the retrieved data
+        returnObject = new Admin(
+          resp.id,
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts
+        );
+      } else {
+        // Create a User object with the retrieved data
+        returnObject = new User(
+          resp.id,
+          userData.name,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts
+        );
       }
 
       // checks if hashedPassword matches the one stored in DB
@@ -620,7 +634,7 @@ const destroySession = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  let { email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Get current user information via email
