@@ -9,7 +9,6 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
   const { previousPath } = useGlobalStore();
 
   const navigate = useNavigate();
@@ -44,13 +43,20 @@ const Login = () => {
             }
           }
           useGlobalStore.setState({ userId, userType, userName });
+
+          if (previousPath) {
+            console.log('previousPath ', previousPath);
+            return navigate(previousPath);
+          }
+
+          return navigate('/');
         }
       }
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
+      alert(error.message);
+      setLoading(false);
     }
-
-    return navigate('/');
   };
 
   return (

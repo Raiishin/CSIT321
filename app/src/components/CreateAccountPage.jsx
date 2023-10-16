@@ -4,8 +4,7 @@ import { login } from '../api/user';
 import useGlobalStore from '../store/globalStore';
 
 const CreateAccountPage = () => {
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [name, setName] = useState('');
   const [address, setAddress] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,18 +15,14 @@ const CreateAccountPage = () => {
   const navigate = useNavigate();
   const globalStore = useGlobalStore();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
 
     // Perform form validation here
     const validationErrors = {};
 
-    if (firstName.trim() === '') {
-      validationErrors.firstName = 'First name is required.';
-    }
-
-    if (lastName.trim() === '') {
-      validationErrors.lastName = 'Last name is required.';
+    if (name.trim() === '') {
+      validationErrors.name = 'Name is required.';
     }
 
     if (address.trim() === '') {
@@ -64,32 +59,20 @@ const CreateAccountPage = () => {
       <div className="max-w-[40%] mx-auto py-5 p-12 rounded shadow-md bg-smoke-white">
         <h2 className="text-2xl font-bold mb-4 text-center text-gray-700">Create New Account</h2>
         <form onSubmit={handleSubmit}>
-          {/* First Name */}
           <div className="mb-2 flex">
-            <div className="flex-1 mr-2">
-              <label htmlFor="fname" className="block text-gray-700 font-bold mb-2">
-                First Name
-              </label>
-              <input
-                type="text"
-                id="fname"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${errors.firstName ? 'border-red' : ''}`}
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-              />
-              {errors.firstName && <div className="text-red">{errors.firstName}</div>}
-            </div>
-            {/* Last Name */}
+            {/* Name */}
             <div className="flex-1">
-              <label htmlFor="lname" className="block text-gray-700 font-bold mb-2">
-                Last Name
+              <label htmlFor="name" className="block text-gray-700 font-bold mb-2">
+                Name
               </label>
               <input
                 type="text"
-                id="lname"
-                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${errors.lastName ? 'border-red' : ''}`}
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
+                id="name"
+                className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${
+                  errors.name ? 'border-red' : ''
+                }`}
+                value={name}
+                onChange={e => setName(e.target.value)}
               />
               {errors.lastName && <div className="text-red">{errors.lastName}</div>}
             </div>
@@ -103,9 +86,11 @@ const CreateAccountPage = () => {
             <input
               type="text"
               id="address"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${errors.address ? 'border-red' : ''}`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${
+                errors.address ? 'border-red' : ''
+              }`}
               value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              onChange={e => setAddress(e.target.value)}
             />
             {errors.address && <div className="text-red">{errors.address}</div>}
           </div>
@@ -118,9 +103,11 @@ const CreateAccountPage = () => {
             <input
               type="email"
               id="email"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${errors.email ? 'border-red' : ''}`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${
+                errors.email ? 'border-red' : ''
+              }`}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
             />
             {errors.email && <div className="text-red">{errors.email}</div>}
           </div>
@@ -133,9 +120,11 @@ const CreateAccountPage = () => {
             <input
               type="password"
               id="password"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${errors.password ? 'border-red' : ''}`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${
+                errors.password ? 'border-red' : ''
+              }`}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
             />
             {errors.password && <div className="text-red">{errors.password}</div>}
           </div>
@@ -148,16 +137,18 @@ const CreateAccountPage = () => {
             <input
               type="password"
               id="cfmpassword"
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${errors.confirmPassword ? 'border-red' : ''}`}
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md ${
+                errors.confirmPassword ? 'border-red' : ''
+              }`}
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={e => setConfirmPassword(e.target.value)}
             />
             {errors.confirmPassword && <div className="text-red">{errors.confirmPassword}</div>}
           </div>
 
           {/* Radio Buttons */}
           <div className={`mb-2 flex pt-4 ${errors.selectedType ? 'border-red' : ''}`}>
-            <p className="text-gray-700 font-bold">Type:</p>
+            <p className="text-gray-700 font-bold">Account Type:</p>
             <label className="text-gray-700 font-bold ml-5">
               <input
                 type="radio"
@@ -194,8 +185,38 @@ const CreateAccountPage = () => {
             {errors.selectedType && <div className="text-red ml-2">{errors.selectedType}</div>}
           </div>
 
+          {/* Enrolment Radio Buttons */}
+          <div className={`mb-2 flex pt-4 ${errors.selectedType ? 'border-red' : ''}`}>
+            <p className="text-gray-700 font-bold">Enrolment Type:</p>
+            <label className="text-gray-700 font-bold ml-5">
+              <input
+                type="radio"
+                name="options"
+                value="FT"
+                className="ml-2 mr-2"
+                checked={selectedType === 'FT'}
+                onChange={() => setSelectedType('FT')}
+              />
+              Full-time
+            </label>
+            <label className="text-gray-700 font-bold ml-5">
+              <input
+                type="radio"
+                name="options"
+                value="PT"
+                className="ml-2 mr-2"
+                checked={selectedType === 'PT'}
+                onChange={() => setSelectedType('PT')}
+              />
+              Part-time
+            </label>
+            {errors.selectedType && <div className="text-red ml-2">{errors.selectedType}</div>}
+          </div>
+
           <div className="mb-4 pt-5">
-            <button className="bg-[#75c058] w-full text-white font-bold py-2 px-4 rounded shadow-md" type="submit">
+            <button
+              className="bg-[#75c058] w-full text-white font-bold py-2 px-4 rounded shadow-md"
+              type="submit">
               Create
             </button>
           </div>

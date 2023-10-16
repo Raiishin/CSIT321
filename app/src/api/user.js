@@ -28,12 +28,11 @@ export const getAllUserData = async () => {
 };
 
 // edit user account function
-export const editUser = async (oldId, updatedUserData) => {
+export const editUser = async (oldId, newName, newEmail /*, newAddress*/) => {
   try {
     // console.log('oldId: ', oldId);
-    // console.log('updatedUserData: ', updatedUserData);
-
-    const { id, name, password, email, isActive, modules, enrollmentStatus } = updatedUserData;
+    // console.log('newName: ', newName);
+    // console.log('newEmail: ', newEmail);
 
     // console.log('id: ', id);
     // console.log('name: ', name);
@@ -44,13 +43,9 @@ export const editUser = async (oldId, updatedUserData) => {
     // console.log('enrollmentStatus: ', enrollmentStatus);
 
     const { data } = await axios.post(`${config.backendEndpoint}/user/update`, {
-      id,
-      name,
-      password,
-      email,
-      isActive,
-      modules,
-      enrollmentStatus
+      oldId,
+      newName,
+      newEmail /*, newAddress*/
     });
     console.log('data: ', data.message);
     return data; // The edited user data, if available
@@ -58,8 +53,32 @@ export const editUser = async (oldId, updatedUserData) => {
     throw error; // Handle the error as needed
   }
 };
+
+export const createUser = async (name, email, password, address) => {
+  try {
+    const { data } = await axios.post(`${config.backendEndpoint}/user/create`, {
+      // some variables to include in the request body
+      name,
+      password,
+      email
+      // type,
+      // isActive,
+      // modules,
+      // enrollmentStatus
+    });
+    console.log('data: ', data.message);
+    return data; // The created user data, if available
+  } catch (error) {
+    throw error; // Handle the error as needed
+  }
+};
+
 export const destroySession = async () => {
-  const { data } = await axios.delete(`${config.backendEndpoint}/user/session`);
+  const { data } = await axios.delete(`${baseEndpoint}/session`);
 
   return data;
+};
+
+export const resetPassword = async (email, password) => {
+  const { data } = await axios.post(`${baseEndpoint}/reset-password`, { email, password });
 };

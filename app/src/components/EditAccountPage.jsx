@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useGlobalStore from '../store/globalStore';
 import editIcon from '../assets/editing.png';
-import { getAllUserData } from '../api/user';
-import EditUser from './EditUser';
+import { getAllUserData, editUser } from '../api/user';
+import userTypeEnum from '../constants/userTypeEnum';
 
 const EditAccountPage = () => {
   const navigate = useNavigate();
@@ -41,6 +41,18 @@ const EditAccountPage = () => {
     }
   };
 
+  const getUserTypeText = type => {
+    const keys = Object.keys(userTypeEnum);
+
+    for (let i = 0; i < keys.length; i++) {
+      if (userTypeEnum[keys[i]] === type) {
+        return keys[i];
+      }
+    }
+
+    return 'Unknown';
+  };
+
   useEffect(() => {
     // if the user is not logged in, redirect to the login page using Navigate
     if (userId === undefined && previousPath !== '/login') {
@@ -55,9 +67,8 @@ const EditAccountPage = () => {
     }
   }, [userId, setPreviousPath, navigate, previousPath]);
 
-  const handleEditButtonClick = data => {
-    // Instead of using states, directly render the EditUser component
-    console.log('edit button clicked', data);
+  const handleEditButtonClick = userId => {
+    // editUser(userId);
   };
 
   return (
@@ -72,12 +83,11 @@ const EditAccountPage = () => {
             <p className="text-[#ccd6f6] text-4xl font-bold">Edit Accounts</p>
           </div>
 
-          <div
-            className={`w-[90%] col-span-3 max-h-[60%] overscroll-auto overflow-y-auto mt-24 ml-20`}>
+          <div className="w-[90%] col-span-3 max-h-[60%] overscroll-auto overflow-y-auto mt-24 ml-20">
             <table className="border-collapse bg-gray-50 border-b-2 border-slate-500 w-[100%] font-sans">
               <thead className="bg-[#dcdcdc]">
                 <tr>
-                  <th className="p-3 text-sm font-semibold tracking-wide text-left">No.</th>
+                  <th className="p-3 text-sm font-semibold tracking-wide text-left">User Type</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Name</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Email</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Edit</th>
@@ -87,8 +97,9 @@ const EditAccountPage = () => {
                 {userData.map((data, index) => (
                   <tr className="bg-white" key={index}>
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
-                      {index + 1}
+                      {getUserTypeText(data.type)}
                     </td>
+
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
                       {data.name}
                     </td>
@@ -97,7 +108,7 @@ const EditAccountPage = () => {
                     </td>
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
                       <Link to="/account/edit" state={{ data }}>
-                        <button>
+                        <button onClick={handleEditButtonClick}>
                           <img src={editIcon} alt="editIcon" className="w-6" />
                         </button>
                       </Link>

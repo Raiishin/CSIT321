@@ -284,7 +284,9 @@ const authenticateUser = async (req, res) => {
 
 const index = async (req, res) => {
   const usersSnapshot = await getDocs(users);
-  const usersData = usersSnapshot.docs.map(doc => doc.data());
+  const usersData = usersSnapshot.docs.map(doc => {
+    return { id: doc.id, ...doc.data() };
+  });
 
   return res.json({ usersData });
 };
@@ -304,7 +306,8 @@ const view = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, password, email, type, isActive, modules, enrollmentStatus } = req.body;
+  const { name, password, email, type, isActive, modules, enrollmentStatus /*, address */ } =
+    req.body;
 
   try {
     // Get user data
@@ -418,45 +421,34 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, password, email, isActive, modules, enrollmentStatus } = req.body;
+  // const { id, name, password, email, isActive, modules, enrollmentStatus } = req.body;
+  const { oldId, newName, newEmail /*, newAddress */ } = req.body;
+  // console.log('req.body: ', req.body);
+  // console.log('oldId: ', oldId);
+  // console.log('newName: ', newName);
+  // console.log('newEmail: ', newEmail);
 
   try {
     // Get current user information via email
-    const userRef = doc(db, 'users', id);
+    const userRef = doc(db, 'users', oldId);
     const userDataRef = await getDoc(userRef);
 
     // Update user information
     const userData = { ...userDataRef.data() };
 
     // Update name if provided and not empty
-    if (!isUndefined(name) && name !== '') {
-      userData.name = name;
-    }
-
-    // Update password if provided and not empty
-    if (!isUndefined(password) && password !== '') {
-      userData.password = password;
+    if (!isUndefined(newName) && newName !== '') {
+      userData.name = newName;
     }
 
     // Update email if provided and not empty
-    if (!isUndefined(email) && email !== '') {
-      userData.email = email;
+    if (!isUndefined(newEmail) && newEmail !== '') {
+      userData.email = newEmail;
     }
 
-    // Update is_active if provided and not empty
-    if (!isUndefined(isActive)) {
-      userData.is_active = isActive;
-    }
-
-    // Update modules if provided and not empty
-    if (!isUndefined(modules)) {
-      userData.modules = modules;
-    }
-
-    // Update enrollmentStatus if provided and not empty
-    if (!isUndefined(enrollmentStatus)) {
-      userData.enrollmentStatus = enrollmentStatus;
-    }
+    // if (!isUndefined(newAddress) && newAddress !== '') {
+    //   userData.address = newAddress;
+    // }
 
     // Update in Firebase
     await setDoc(userRef, userData);
@@ -469,7 +461,7 @@ const update = async (req, res) => {
     if (updatedUserData.type === userTypeEnum.STUDENT) {
       // Create a Student object with the retrieved data
       returnObject = new Student(
-        id,
+        oldId,
         updatedUserData.name,
         updatedUserData.password,
         updatedUserData.email,
@@ -480,10 +472,10 @@ const update = async (req, res) => {
         updatedUserData.modules,
         updatedUserData.enrollment_status
       );
-    } else if (data.type === userTypeEnum.STAFF) {
+    } else if (updatedUserData.type === userTypeEnum.STAFF) {
       // Create a staff object with the retrieved data
       returnObject = new Staff(
-        id,
+        oldId,
         updatedUserData.name,
         updatedUserData.password,
         updatedUserData.email,
@@ -496,7 +488,7 @@ const update = async (req, res) => {
     } else if (updatedUserData.type === userTypeEnum.ADMIN) {
       // Create an Admin object with the retrieved data
       returnObject = new Admin(
-        id,
+        oldId,
         updatedUserData.name,
         updatedUserData.password,
         updatedUserData.email,
@@ -508,7 +500,7 @@ const update = async (req, res) => {
     } else {
       // Create a User object with the retrieved data
       returnObject = new User(
-        id,
+        oldId,
         updatedUserData.name,
         updatedUserData.password,
         updatedUserData.email,
