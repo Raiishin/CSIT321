@@ -4,12 +4,11 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
-import { getClassById, latestClass } from '../library/class.js';
-import { getUserById, getTotalStudentsByModuleId } from '../library/user.js';
+import { latestClass } from '../library/class.js';
+import { getUserById } from '../library/user.js';
 import { getObjectKey, convertTimeStringToDate } from '../library/index.js';
 import errorMessages from '../constants/errorMessages.js';
 import { isUndefined } from 'lodash-es';
-import { getAttendanceByClassId } from '../library/attendanceLogs.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -77,26 +76,6 @@ const create = async (req, res) => {
   }
 };
 
-const view = async (req, res) => {
-  const { classId } = req.query;
-
-  try {
-    // Get Class data
-    const classData = await getClassById(classId);
-
-    // Get the total number of users in the module
-    const totalStudents = await getTotalStudentsByModuleId(classData.module_id);
-
-    // Get attended users
-    const attendedStudents = await getAttendanceByClassId(classId);
-
-    return res.json({ attendanceMarked: attendedStudents.length, totalStudents });
-  } catch (error) {
-    return res.json({ message: error.message });
-  }
-};
-
 export default {
-  create,
-  view
+  create
 };

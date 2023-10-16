@@ -63,6 +63,7 @@ export const getUserByEmail = async (email, throwError = true) => {
  * @throws an error message if no users are found
  */
 export const getTotalStudentsByModuleId = async moduleId => {
+  
   // Get user data
   const searchQuery = query(
     users,
@@ -73,7 +74,7 @@ export const getTotalStudentsByModuleId = async moduleId => {
 
   // Check if user exists
   if (usersData.docs.length === 0) {
-    throw new Error(errorMessages.USERNOTFOUND);
+    return 0;
   }
 
   return usersData.docs.length;

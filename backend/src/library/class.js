@@ -40,6 +40,25 @@ export const getClassById = async classId => {
   return classDocSnapshot.data();
 };
 
+/**
+ * @param {string} moduleId
+ * @returns an array of class id from firebase
+ * @throws an error message if class is not found
+ */
+export const getClassesIdByModuleId = async moduleId => {
+
+  const searchQuery = query(classes, where('module_id', '==', moduleId));
+  const classDocSnapshot = await getDocs(searchQuery);
+
+  if (classDocSnapshot.length === 0) {
+    throw new Error(errorMessages.CLASSNOTFOUND);
+  }
+
+  const classIds = classDocSnapshot.docs.map(doc => doc.id);
+  return classIds;
+};
+
+
 export const sortClasses = classesByModuleArr => {
   const arr = [...classesByModuleArr];
 
