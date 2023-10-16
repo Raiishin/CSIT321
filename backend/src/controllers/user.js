@@ -38,10 +38,7 @@ const users = collection(db, 'users');
 
 dotenv.config();
 
-// const { expectedOrigin, rpID } = process.env;
-
-const expectedOrigin = 'http://localhost:3000';
-const rpID = 'localhost';
+const { expectedOrigin, rpID } = process.env;
 
 /**
  * 2FA and Passwordless WebAuthn flows expect you to be able to uniquely identify the user that
