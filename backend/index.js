@@ -17,12 +17,10 @@ const app = express();
 const port = 5001;
 
 app.use(cors());
-
 app.use(express.json());
 app.use(cookieParser());
 
 app.set('trust proxy', 3);
-app.get('/ip', (request, response) => response.send(request.ip));
 
 const { ENABLE_HTTPS, rpID } = process.env;
 
