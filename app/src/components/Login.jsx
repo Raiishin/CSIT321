@@ -3,25 +3,48 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../api/user';
 import useGlobalStore from '../store/globalStore';
 import { ColorRing } from 'react-loader-spinner';
+import { registerUser, authenticateUser } from '../api/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  const [loading, setLoading] = useState(undefined);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleLogin = async e => {
     e.preventDefault();
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const { userId, userType, userName } = await login(email, password);
+      const loginResponse = await login(email, password);
 
-    useGlobalStore.setState({ userId, userType, userName });
+      if (!loginResponse.success) {
+        alert(loginResponse.message);
+        setLoading(false);
+      } else {
+        const { id: userId, type: userType, name: userName, devices } = loginResponse;
 
-    return navigate('/');
+        // Registration
+        if (devices.length === 0) {
+          // Pass the options to the authenticator and wait for a response
+          await registerUser(userId);
+        } else {
+          const verifyAuthenticationResponse = await authenticateUser(userId);
+
+          if (!verifyAuthenticationResponse.verified) {
+            throw new Error('Authentication failed');
+          }
+        }
+
+        useGlobalStore.setState({ userId, userType, userName });
+
+        return navigate('/');
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
@@ -71,8 +94,7 @@ const Login = () => {
             <div className="mb-4 pt-5">
               <button
                 type="submit"
-                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded"
-              >
+                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded">
                 Login
               </button>
             </div>

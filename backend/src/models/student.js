@@ -1,14 +1,30 @@
 import User from '../models/user.js';
 
 class Student extends User {
-  constructor(id, name, password, email, type, isActive, modules, enrollStatus) {
-    super(id, name, password, email, type, isActive, modules, enrollStatus);
+  constructor(
+    id,
+    name,
+    password,
+    email,
+    type,
+    isActive,
+    isLocked,
+    failedLoginAttempts,
+    modules,
+    enrollmentStatus
+  ) {
+    super(id, name, password, email, type, isActive, isLocked, failedLoginAttempts);
 
-    this.enrollStatus = enrollStatus;
+    this.modules = modules;
+    this.enrollmentStatus = enrollmentStatus;
   }
 
-  static get enrollStatus() {
-    return this.enrollStatus;
+  static get modules() {
+    return this.modules;
+  }
+
+  static get enrollmentStatus() {
+    return this.enrollmentStatus;
   }
 }
 

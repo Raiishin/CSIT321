@@ -3,12 +3,13 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import UserController from './src/controllers/user.js';
 import ClassController from './src/controllers/class.js';
-import AuthController from './src/controllers/auth.js';
 import AttendanceLogsController from './src/controllers/attendanceLogs.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
 import rateLimit from 'express-rate-limit';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -18,6 +19,10 @@ const port = 5001;
 app.use(cors());
 
 app.use(express.json());
+app.use(cookieParser());
+
+app.set('trust proxy', 1);
+app.get('/ip', (request, response) => response.send(request.ip));
 
 const { ENABLE_HTTPS, rpID } = process.env;
 
@@ -38,8 +43,18 @@ const { ENABLE_HTTPS, rpID } = process.env;
 
 const rateLimitConfig = {
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5, // Maximum number of requests per windowMs(5 per min)
+  max: 5, // Maximum number of requests per windowMs (5 per min)
   message: 'Too many requests from this IP, please try again later.'
+};
+
+const sessionConf = {
+  secret: 'fyp-23-s3-28',
+  resave: true,
+  saveUninitialized: false,
+  cookie: {
+    secure: true, // Set to true as we are using https
+    maxAge: 60 * 60 * 1000 // Expire in an hour
+  }
 };
 
 http.createServer(app).listen(port, () => console.log('Application Started at: ' + port));
@@ -47,9 +62,24 @@ http.createServer(app).listen(port, () => console.log('Application Started at: '
 const router = express.Router();
 
 router.get('/users', rateLimit(rateLimitConfig), UserController.index);
+router.get(
+  '/user/session',
+  rateLimit(rateLimitConfig),
+  session(sessionConf),
+  UserController.getSession
+);
+router.get('/user/session/check', session(sessionConf), UserController.checkSession);
+router.post(
+  '/user/session',
+  rateLimit(rateLimitConfig),
+  session(sessionConf),
+  UserController.createSession
+);
+router.delete('/user/session', session(sessionConf), UserController.destroySession);
+
 router.post('/user/create', rateLimit(rateLimitConfig), UserController.create);
 router.post('/user/update', rateLimit(rateLimitConfig), UserController.update);
-router.post('/user/login', rateLimit(rateLimitConfig), UserController.login);
+router.post('/user/login', rateLimit(rateLimitConfig), session(sessionConf), UserController.login);
 router.post('/user/reset-password', rateLimit(rateLimitConfig), UserController.resetPassword);
 router.delete('/user', rateLimit(rateLimitConfig), UserController.destroy);
 
@@ -60,15 +90,15 @@ router.post('/attendance/mark', rateLimit(rateLimitConfig), AttendanceLogsContro
 router.get(
   '/generate/registration',
   rateLimit(rateLimitConfig),
-  AuthController.generateRegistration
+  UserController.generateRegistration
 );
 router.get(
   '/generate/authentication',
   rateLimit(rateLimitConfig),
-  AuthController.generateAuthentication
+  UserController.generateAuthentication
 );
 
-router.post('/verify/registration', rateLimit(rateLimitConfig), AuthController.registerUser);
-router.post('/verify/authentication', rateLimit(rateLimitConfig), AuthController.authenticateUser);
+router.post('/verify/registration', rateLimit(rateLimitConfig), UserController.registerUser);
+router.post('/verify/authentication', rateLimit(rateLimitConfig), UserController.authenticateUser);
 
 app.use('/', router); //to use the routes

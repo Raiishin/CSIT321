@@ -6,3 +6,9 @@ export const login = async (email, password) => {
 
   return data;
 };
+
+export const destroySession = async () => {
+  const { data } = await axios.delete(`${config.backendEndpoint}/user/session`);
+
+  return data;
+};

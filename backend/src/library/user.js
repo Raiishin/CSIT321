@@ -53,5 +53,5 @@ export const getUserByEmail = async (email, throwError = true) => {
     }
   }
 
-  return { id: usersData.docs[0].id, data: usersData.docs[0].data() };
+  return { id: usersData.docs[0].id, ...usersData.docs[0].data() };
 };
