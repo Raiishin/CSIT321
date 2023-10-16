@@ -18,6 +18,7 @@ import useGlobalStore from './store/globalStore';
 import { isUndefined } from 'lodash';
 
 import IdleTimerProvider from './components/IdleTimerProvider';
+import ResetPassword from './components/ResetPassword';
 
 const App = () => {
   const userId = useGlobalStore(state => state.userId);
@@ -34,6 +35,7 @@ const App = () => {
             <Route path="/contact" element={<Contact />} />
             <Route path="/faq" element={<FAQ />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             <Route path="/timetable" element={<Timetable />} />
             <Route path="/attendance" element={<Attendance />} />

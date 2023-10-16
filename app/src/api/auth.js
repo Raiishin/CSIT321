@@ -1,6 +1,7 @@
 import config from '../config/index';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 import axios from 'axios';
+import { isUndefined } from 'lodash';
 
 export const generateRegistration = async userId => {
   const { data } = await axios.get(`${config.backendEndpoint}/generate/registration`, {
@@ -10,9 +11,17 @@ export const generateRegistration = async userId => {
   return data;
 };
 
-export const generateAuthentication = async userId => {
+export const generateAuthenticationByUserId = async userId => {
   const { data } = await axios.get(`${config.backendEndpoint}/generate/authentication`, {
     params: { userId }
+  });
+
+  return data;
+};
+
+export const generateAuthenticationByEmail = async email => {
+  const { data } = await axios.get(`${config.backendEndpoint}/generate/authentication`, {
+    params: { email }
   });
 
   return data;
@@ -47,8 +56,10 @@ export const registerUser = async (userId, setRegistrationStatus = () => {}) => 
   return await verifyRegistration(verifyRegistrationBody);
 };
 
-export const authenticateUser = async (userId, setAuthenticationStatus = () => {}) => {
-  const generatedAuthentication = await generateAuthentication(userId);
+export const authenticateUser = async (params, setAuthenticationStatus = () => {}) => {
+  const generatedAuthentication = !isUndefined(params.email)
+    ? await generateAuthenticationByEmail(params.email)
+    : await generateAuthenticationByUserId(params.userId);
 
   // Pass the options to the authenticator and wait for a response
   const authenticationResponse = await startAuthentication(generatedAuthentication);
@@ -57,8 +68,9 @@ export const authenticateUser = async (userId, setAuthenticationStatus = () => {
 
   const verifyAuthenticationBody = {
     ...authenticationResponse,
-    userId,
-    expectedChallenge: generatedAuthentication.challenge
+    expectedChallenge: generatedAuthentication.challenge,
+    ...(!isUndefined(params.email) && { email: params.email }),
+    ...(!isUndefined(params.userId) && { userId: params.userId })
   };
 
   return await verifyAuthentication(verifyAuthenticationBody);

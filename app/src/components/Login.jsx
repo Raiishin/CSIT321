@@ -18,29 +18,33 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const loginResponse = await login(email, password);
-
-      if (!loginResponse.success) {
-        alert(loginResponse.message);
+      if (password.length < 8) {
+        alert('Password must be at least 8 characters long');
         setLoading(false);
       } else {
-        const { id: userId, type: userType, name: userName, devices } = loginResponse;
+        const loginResponse = await login(email, password);
 
-        // Registration
-        if (devices.length === 0) {
-          // Pass the options to the authenticator and wait for a response
-          await registerUser(userId);
+        if (!loginResponse.success) {
+          alert(loginResponse.message);
+          setLoading(false);
         } else {
-          const verifyAuthenticationResponse = await authenticateUser(userId);
+          const { id: userId, type: userType, name: userName, devices } = loginResponse;
 
-          if (!verifyAuthenticationResponse.verified) {
-            throw new Error('Authentication failed');
+          // Registration
+          if (devices.length === 0) {
+            // Pass the options to the authenticator and wait for a response
+            await registerUser(userId);
+          } else {
+            const verifyAuthenticationResponse = await authenticateUser({userId});
+
+            if (!verifyAuthenticationResponse.verified) {
+              throw new Error('Authentication failed');
+            }
           }
+          useGlobalStore.setState({ userId, userType, userName });
+
+          return navigate('/');
         }
-
-        useGlobalStore.setState({ userId, userType, userName });
-
-        return navigate('/');
       }
     } catch (error) {
       console.log(error);
@@ -94,7 +98,8 @@ const Login = () => {
             <div className="mb-4 pt-5">
               <button
                 type="submit"
-                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded">
+                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded"
+              >
                 Login
               </button>
             </div>
