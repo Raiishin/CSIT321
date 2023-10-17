@@ -37,7 +37,7 @@ const CreateAccount = () => {
       setModules(data);
     };
 
-    if (selectedUserType === 'Student') {
+    if (selectedUserType === userTypeEnum.STUDENT) {
       getModulesData();
     }
   }, [selectedUserType]);
@@ -198,7 +198,7 @@ const CreateAccount = () => {
 
           <div className="flex flex-row items-center">
             <p className="text-gray-700 font-bold mr-4">Account Type:</p>
-            <RadioGroup row onChange={e => setSelectedUserType(e.target.value)}>
+            <RadioGroup row onChange={e => setSelectedUserType(+e.target.value)}>
               <FormControlLabel value={userTypeEnum.STUDENT} control={<Radio />} label="Student" />
               <FormControlLabel value={userTypeEnum.STAFF} control={<Radio />} label="Staff" />
               <FormControlLabel value={userTypeEnum.ADMIN} control={<Radio />} label="Admin" />
