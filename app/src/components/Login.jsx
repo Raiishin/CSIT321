@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/user';
 import useGlobalStore from '../store/globalStore';
-import { ColorRing } from 'react-loader-spinner';
+import Loading from './Loading';
 import { registerUser, authenticateUser } from '../api/auth';
 
 const Login = () => {
@@ -42,7 +42,7 @@ const Login = () => {
               throw new Error('Authentication failed');
             }
           }
-          useGlobalStore.setState({ userId, userType, userName });
+          useGlobalStore.setState({ userId, userType: +userType, userName });
 
           if (previousPath) {
             console.log('previousPath ', previousPath);
@@ -66,12 +66,7 @@ const Login = () => {
 
         {loading ? (
           <div className="flex place-content-center m-16">
-            <ColorRing
-              visible={true}
-              height="80"
-              width="80"
-              colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
-            />
+            <Loading />
           </div>
         ) : (
           <form onSubmit={handleLogin}>

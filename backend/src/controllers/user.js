@@ -306,8 +306,7 @@ const view = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, password, email, type, isActive, modules, enrollmentStatus /*, address */ } =
-    req.body;
+  const { name, address, email, password, type } = req.body;
 
   try {
     // Get user data
@@ -317,16 +316,33 @@ const create = async (req, res) => {
       throw new Error(errorMessages.USERALREADYEXISTS);
     }
 
-    const modulesCol = collection(db, 'modules');
+    const newUserData = {
+      name,
+      address,
+      email,
+      type,
+      is_active: true,
+      is_locked: false,
+      failed_login_attempts: 0
+    };
 
-    // Check if modules exist in the "modules" collection
-    for (const moduleId of modules) {
-      const moduleRef = doc(modulesCol, moduleId);
-      const moduleDoc = await getDoc(moduleRef);
+    if (type === userTypeEnum.STUDENT) {
+      const { modules, enrollmentStatus } = req.body;
 
-      if (!moduleDoc.exists()) {
-        throw new Error(`Module ${moduleId} does not exist`);
+      const modulesCollection = collection(db, 'modules');
+      const modulesSnapshot = await getDocs(modulesCollection);
+      const modulesIdData = modulesSnapshot.docs.map(doc => doc.id);
+
+      for (let i = 0; i < modules.length; i++) {
+        const el = modulesIdData.find(el => el === modules[i]);
+
+        if (isUndefined(el)) {
+          throw new Error(`Module ${moduleId} does not exist`);
+        }
       }
+
+      newUserData.modules = modules;
+      newUserData.enrollment_status = enrollmentStatus;
     }
 
     return bcrypt.hash(password, config.salt, async (err, hash) => {
@@ -335,17 +351,7 @@ const create = async (req, res) => {
       }
 
       // Create new user, default to being a STUDENT
-      const resp = await addDoc(users, {
-        name,
-        password: hash,
-        email,
-        type,
-        is_active: isActive,
-        is_locked: false,
-        failed_login_attempts: 0,
-        modules,
-        enrollment_status: enrollmentStatus
-      });
+      const resp = await addDoc(users, { ...newUserData, password: hash });
 
       // Fetch the user data from the newly created user
       const userData = await getUserById(resp.id);
@@ -358,6 +364,7 @@ const create = async (req, res) => {
         returnObject = new Student(
           resp.id,
           userData.name,
+          userData.address,
           userData.password,
           userData.email,
           userData.type,
@@ -372,6 +379,7 @@ const create = async (req, res) => {
         returnObject = new Staff(
           resp.id,
           userData.name,
+          userData.address,
           userData.password,
           userData.email,
           userData.type,
@@ -385,6 +393,7 @@ const create = async (req, res) => {
         returnObject = new Admin(
           resp.id,
           userData.name,
+          userData.address,
           userData.password,
           userData.email,
           userData.type,
@@ -397,6 +406,7 @@ const create = async (req, res) => {
         returnObject = new User(
           resp.id,
           userData.name,
+          userData.address,
           userData.password,
           userData.email,
           userData.type,
@@ -421,100 +431,25 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  // const { id, name, password, email, isActive, modules, enrollmentStatus } = req.body;
-  const { oldId, newName, newEmail /*, newAddress */ } = req.body;
-  // console.log('req.body: ', req.body);
-  // console.log('oldId: ', oldId);
-  // console.log('newName: ', newName);
-  // console.log('newEmail: ', newEmail);
+  const { id, name, email, address } = req.body;
 
   try {
-    // Get current user information via email
-    const userRef = doc(db, 'users', oldId);
+    const userRef = doc(db, 'users', id);
     const userDataRef = await getDoc(userRef);
 
     // Update user information
-    const userData = { ...userDataRef.data() };
-
-    // Update name if provided and not empty
-    if (!isUndefined(newName) && newName !== '') {
-      userData.name = newName;
-    }
-
-    // Update email if provided and not empty
-    if (!isUndefined(newEmail) && newEmail !== '') {
-      userData.email = newEmail;
-    }
-
-    // if (!isUndefined(newAddress) && newAddress !== '') {
-    //   userData.address = newAddress;
-    // }
+    const userData = userDataRef.data();
+    userData.name = name;
+    userData.email = email;
+    userData.address = address;
 
     // Update in Firebase
     await setDoc(userRef, userData);
 
-    // Retrieve the updated user
-    const updatedUserData = await getDoc(userRef);
-
-    let returnObject;
-
-    if (updatedUserData.type === userTypeEnum.STUDENT) {
-      // Create a Student object with the retrieved data
-      returnObject = new Student(
-        oldId,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts,
-        updatedUserData.modules,
-        updatedUserData.enrollment_status
-      );
-    } else if (updatedUserData.type === userTypeEnum.STAFF) {
-      // Create a staff object with the retrieved data
-      returnObject = new Staff(
-        oldId,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts,
-        updatedUserData.modules
-      );
-    } else if (updatedUserData.type === userTypeEnum.ADMIN) {
-      // Create an Admin object with the retrieved data
-      returnObject = new Admin(
-        oldId,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts
-      );
-    } else {
-      // Create a User object with the retrieved data
-      returnObject = new User(
-        oldId,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts
-      );
-    }
-
-    return res.json(returnObject);
+    return res.json({ success: true, message: 'User update completed!' });
   } catch (error) {
     console.error('Error updating user:', error);
-    return res.json({ message: 'User update failed!' });
+    return res.json({ success: false, message: errorMessages.USERUPDATEFAILED });
   }
 };
 

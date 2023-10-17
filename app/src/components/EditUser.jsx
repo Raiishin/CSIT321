@@ -1,48 +1,28 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { editUser } from '../api/user';
+import { updateUser } from '../api/user';
 
 const EditUser = () => {
-  // Access the passed data as props
   const location = useLocation();
   const { data } = location.state;
-
-  // Use data in your component
-  const { id, name, password, email, is_active, modules, enrollment_status, type } = data;
-
-  // uncomment this when our db is updated to include address field
-  // const { address } = data;
-  // const [newAddress, setNewAddress] = useState(address);
-  const handleAddressChange = e => {
-    // setNewAddress(e.target.value);
-  };
+  const { id, name, email, address } = data;
 
   const [newName, setNewName] = useState(name);
   const [newEmail, setNewEmail] = useState(email);
+  const [newAddress, setNewAddress] = useState(address);
 
-  const handleNameChange = e => {
-    setNewName(e.target.value);
+  const navigate = useNavigate();
+
+  const handleUpdate = async () => {
+    const res = await updateUser(id, newName, newEmail, newAddress);
+    if (!res.success) {
+      alert(res.message);
+    } else {
+      navigate('/accounts');
+    }
   };
 
-  const handleEmailChange = e => {
-    setNewEmail(e.target.value);
-  };
-
-  const handleUpdate = () => {
-    // handle update logic
-    editUser(id, newName, newEmail /*, newAddress*/);
-
-    // uncomment this when our db is updated to include address field
-    //editUser(id, newName, newAddress);
-  };
-
-  const handleCancel = () => {
-    // handle cancel logic
-    // route user back to /account
-  };
-
-  // console.log('data from EditUser.jsx: ', data);
   return (
     <div>
       <div className="pt-20">
@@ -58,7 +38,8 @@ const EditUser = () => {
               id="name"
               required
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
-              value={name}
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
             />
           </div>
 
@@ -71,7 +52,8 @@ const EditUser = () => {
               id="email"
               required
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
-              value={email}
+              value={newEmail}
+              onChange={e => setNewEmail(e.target.value)}
             />
           </div>
 
@@ -84,18 +66,21 @@ const EditUser = () => {
               id="address"
               required
               className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:border-blue shadow-md"
-              value={/*address*/ ''}
+              value={newAddress}
+              onChange={e => setNewAddress(e.target.value)}
             />
             <button
               type="submit"
               className="mt-10 w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded"
-              onClick={handleUpdate}>
+              onClick={handleUpdate}
+            >
               Update
             </button>
             <button
               type="submit"
               className="mt-5 w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded"
-              onClick={handleCancel}>
+              onClick={() => navigate('/accounts')}
+            >
               Cancel
             </button>
           </div>

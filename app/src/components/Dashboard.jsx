@@ -22,7 +22,7 @@ const Dashboard = () => {
   return (
     <div>
       <div class="flex justify-center pt-6 pb-4">
-        <p className="text-cyan text-4xl font-bold">Welcome Student {userName}!</p>
+        <p className="text-cyan text-4xl font-bold">Welcome {userName}!</p>
       </div>
 
       <div class="flex justify-center pb-8">
@@ -44,7 +44,7 @@ const Dashboard = () => {
 
         {userType === userTypeEnum.ADMIN && (
           <>
-            <button onClick={() => navigate('/account/edit')}>
+            <button onClick={() => navigate('/accounts')}>
               <img src={editAccountImage} alt="editAccountImage" class="w-40" />
             </button>
 
@@ -60,7 +60,8 @@ const Dashboard = () => {
               reset();
               navigate('/');
               await destroySession();
-            }}>
+            }}
+          >
             <img src={logoutImage} alt="logoutImage" class="w-40" />
           </button>
         </div>

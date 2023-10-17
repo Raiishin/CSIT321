@@ -27,30 +27,14 @@ export const getAllUserData = async () => {
   return data;
 };
 
-export const editUser = async (oldId, newName, newEmail) => {
-  try {
-    const { data } = await axios.post(`${config.backendEndpoint}/user/update`, {
-      oldId,
-      newName,
-      newEmail
-    });
+export const updateUser = async (id, name, email, address) => {
+  const { data } = await axios.post(`${baseEndpoint}/update`, { id, name, email, address });
 
-    return data;
-  } catch (error) {
-    throw error;
-  }
+  return data;
 };
 
-export const createUser = async (name, email, password, address) => {
-  try {
-    const { data } = await axios.post(`${config.backendEndpoint}/user/create`, {
-      name,
-      password,
-      email
-    });
+export const createUser = async params => {
+  const { data } = await axios.post(`${baseEndpoint}/create`, params);
 
-    return data;
-  } catch (error) {
-    throw error;
-  }
+  return data;
 };
