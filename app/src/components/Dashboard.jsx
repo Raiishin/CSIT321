@@ -22,29 +22,35 @@ const Dashboard = () => {
   return (
     <div>
       <div class="flex justify-center pt-6 pb-4">
-        <p className="text-cyan text-4xl font-bold">Welcome Student {userName}!</p>
+        <p className="text-cyan text-4xl font-bold">Welcome {userName}!</p>
       </div>
 
       <div class="flex justify-center pb-8">
         <p className="text-cyan text-2xl font-bold">What would you like to do today?</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-10 bg-light-cyan justify-items-center content-center h-[40vh]">
-        {userType === userTypeEnum.STUDENT && (
-          <>
-            <button onClick={() => navigate('/timetable')}>
-              <img src={viewTimetableImage} alt="viewTimetableImage" class="w-40" />
-            </button>
+      <div
+        className={`grid grid-cols-${
+          userType === userTypeEnum.STAFF ? 2 : 3
+        } gap-10 bg-light-cyan justify-items-center content-center h-[40vh]`}>
+        {userType === userTypeEnum.STUDENT ||
+          (userType === userTypeEnum.STAFF && (
+            <>
+              <button onClick={() => navigate('/timetable')}>
+                <img src={viewTimetableImage} alt="viewTimetableImage" class="w-40" />
+              </button>
 
-            <button onClick={() => navigate('/attendance')}>
-              <img src={takeAttendanceImage} alt="takeAttendanceImage" class="w-40" />
-            </button>
-          </>
-        )}
+              {userType === userTypeEnum.STUDENT && (
+                <button onClick={() => navigate('/attendance')}>
+                  <img src={takeAttendanceImage} alt="takeAttendanceImage" class="w-40" />
+                </button>
+              )}
+            </>
+          ))}
 
         {userType === userTypeEnum.ADMIN && (
           <>
-            <button onClick={() => navigate('/account/edit')}>
+            <button onClick={() => navigate('/accounts')}>
               <img src={editAccountImage} alt="editAccountImage" class="w-40" />
             </button>
 

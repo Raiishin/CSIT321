@@ -1,4 +1,4 @@
-// Classes Controller
+// Class Controller
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore,
@@ -12,7 +12,9 @@ import {
 import config from '../config/index.js';
 import Class from '../models/class.js';
 import { latestClass, sortClasses } from '../library/class.js';
-import { getUserById } from '../library/user.js';
+import { getAttendanceByClassId } from '../library/attendanceLogs.js';
+import { getUserById, getTotalStudentsByModuleId } from '../library/user.js';
+import userTypeEnum from '../constants/userTypeEnum.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -72,6 +74,15 @@ const index = async (req, res) => {
             classData.type,
             classData.venue
           );
+
+          // Add totalStudents property to the classObj if the user is a staff member
+          if (userData.type === userTypeEnum.STAFF) {
+            const totalStudents = await getTotalStudentsByModuleId(moduleIds[i]);
+            const attendees = await getAttendanceByClassId(classData.id);
+
+            classObj.totalStudents = totalStudents;
+            classObj.attendees = attendees.length;
+          }
 
           // Initialize the classes array if not already present
           if (!classesByModule.hasOwnProperty(moduleId)) {

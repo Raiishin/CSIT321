@@ -6,5 +6,9 @@ export default {
   INCORRECTPASSWORD: 'Incorrect password',
   UNABLETOMARKATTENDANCE: 'You cannot mark attendance for this class',
   ACCOUNTLOCKED: 'Account is locked. Contact admin for support',
-  ATTENDANCEMARKED: 'Attendance for this class has already been marked'
+  ATTENDANCEMARKED: 'Attendance for this class has already been marked',
+  NOCLASSESAVAILABLE: "You don't have any more classes to attend for this semester",
+  USERUPDATEFAILED: 'User update failed',
+  CLASSNOTFOUND: 'Class ID is not found',
+  LECTURERNOTFOUND: 'User is not a Lecturer'
 };

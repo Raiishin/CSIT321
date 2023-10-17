@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/user';
 import useGlobalStore from '../store/globalStore';
-import { ColorRing } from 'react-loader-spinner';
+import Loading from './Loading';
 import { registerUser, authenticateUser } from '../api/auth';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { previousPath } = useGlobalStore();
 
   const navigate = useNavigate();
 
@@ -18,32 +19,43 @@ const Login = () => {
     try {
       setLoading(true);
 
-      const loginResponse = await login(email, password);
-
-      if (!loginResponse.success) {
-        alert(loginResponse.message);
+      if (password.length < 8) {
+        alert('Password must be at least 8 characters long');
         setLoading(false);
       } else {
-        const { id: userId, type: userType, name: userName, devices } = loginResponse;
+        const loginResponse = await login(email, password);
 
-        // Registration
-        if (devices.length === 0) {
-          // Pass the options to the authenticator and wait for a response
-          await registerUser(userId);
+        if (!loginResponse.success) {
+          alert(loginResponse.message);
+          setLoading(false);
         } else {
-          const verifyAuthenticationResponse = await authenticateUser(userId);
+          const { id: userId, type: userType, name: userName, devices } = loginResponse;
 
-          if (!verifyAuthenticationResponse.verified) {
-            throw new Error('Authentication failed');
+          // Registration
+          if (devices.length === 0) {
+            // Pass the options to the authenticator and wait for a response
+            await registerUser(userId);
+          } else {
+            const verifyAuthenticationResponse = await authenticateUser({ userId });
+
+            if (!verifyAuthenticationResponse.verified) {
+              throw new Error('Authentication failed');
+            }
           }
+          useGlobalStore.setState({ userId, userType: +userType, userName });
+
+          if (previousPath) {
+            console.log('previousPath ', previousPath);
+            return navigate(previousPath);
+          }
+
+          return navigate('/');
         }
-
-        useGlobalStore.setState({ userId, userType, userName });
-
-        return navigate('/');
       }
     } catch (error) {
-      console.log(error);
+      console.log(error.message);
+      alert(error.message);
+      setLoading(false);
     }
   };
 
@@ -54,12 +66,7 @@ const Login = () => {
 
         {loading ? (
           <div className="flex place-content-center m-16">
-            <ColorRing
-              visible={true}
-              height="80"
-              width="80"
-              colors={['#e15b64', '#f47e60', '#f8b26a', '#abbd81', '#849b87']}
-            />
+            <Loading />
           </div>
         ) : (
           <form onSubmit={handleLogin}>
@@ -94,7 +101,8 @@ const Login = () => {
             <div className="mb-4 pt-5">
               <button
                 type="submit"
-                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded">
+                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded"
+              >
                 Login
               </button>
             </div>

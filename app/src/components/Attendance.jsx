@@ -11,7 +11,10 @@ const Attendance = () => {
 
   const attemptMarkAttendance = async () => {
     try {
-      const verifyAuthenticationResponse = await authenticateUser(userId, setAuthenticationStatus);
+      const verifyAuthenticationResponse = await authenticateUser(
+        { userId },
+        setAuthenticationStatus
+      );
 
       if (verifyAuthenticationResponse.verified) {
         const resp = await markAttendance(userId);

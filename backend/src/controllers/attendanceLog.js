@@ -1,3 +1,4 @@
+// Attendance Log Controller
 import { differenceInMinutes, isBefore, isAfter } from 'date-fns';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore/lite';
@@ -7,6 +8,7 @@ import { latestClass } from '../library/class.js';
 import { getUserById } from '../library/user.js';
 import { getObjectKey, convertTimeStringToDate } from '../library/index.js';
 import errorMessages from '../constants/errorMessages.js';
+import { isUndefined } from 'lodash-es';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -27,6 +29,10 @@ const create = async (req, res) => {
     // Retrieve latest class
     const userLatestClass = await latestClass(moduleIds);
     console.log('userLatestClass', userLatestClass);
+
+    if (isUndefined(userLatestClass)) {
+      throw new Error(errorMessages.NOCLASSESAVAILABLE);
+    }
 
     // Check if class is already marked
     const attendanceLogsQuery = query(attendanceLogs, where('classId', '==', userLatestClass.id));

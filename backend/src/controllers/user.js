@@ -113,9 +113,15 @@ const generateRegistration = async (req, res) => {
 };
 
 const generateAuthentication = async (req, res) => {
-  const { userId } = req.query;
-
   try {
+    let userId = req.query?.userId ?? '';
+
+    if (!isUndefined(req.query.email)) {
+      const userData = await getUserByEmail(req.query.email);
+
+      userId = userData.id;
+    }
+
     // Query for user from firebase
     // const usersData = await getDoc(doc(db, 'users', userId));
 
@@ -208,67 +214,79 @@ const registerUser = async (req, res) => {
 };
 
 const authenticateUser = async (req, res) => {
-  const { expectedChallenge, userId, ...body } = req.body;
-
-  // Query for user from firebase
-  // const usersData = await getDoc(doc(db, 'users', userId));
-
-  // const user = usersData.data();
-
-  // const devices = JSON.parse(user.devices);
-
-  const user = inMemoryUserDeviceDB[userId];
-
-  const { devices } = user;
-
-  let dbAuthenticator;
-  const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
-
-  // "Query the DB" here for an authenticator matching `credentialID`
-  for (const dev of devices) {
-    if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
-      dbAuthenticator = dev;
-      break;
-    }
-  }
-
-  if (isUndefined(dbAuthenticator)) {
-    return res
-      .status(400)
-      .send({ error: { message: 'Authenticator is not registered with this site' } });
-  }
-
-  let verification;
   try {
-    const opts = {
-      response: body,
-      expectedChallenge: `${expectedChallenge}`,
-      expectedOrigin,
-      expectedRPID: rpID,
-      authenticator: dbAuthenticator,
-      requireUserVerification: true
-    };
-    verification = await verifyAuthenticationResponse(opts);
+    const { expectedChallenge, ...body } = req.body;
+
+    let userId = body?.userId ?? '';
+
+    if (!isUndefined(body.email)) {
+      const userData = await getUserByEmail(body.email);
+
+      userId = userData.id;
+    }
+
+    // Query for user from firebase
+    // const usersData = await getDoc(doc(db, 'users', userId));
+
+    // const user = usersData.data();
+
+    // const devices = JSON.parse(user.devices);
+
+    const user = inMemoryUserDeviceDB[userId];
+
+    const { devices } = user;
+
+    let dbAuthenticator;
+    const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
+
+    // "Query the DB" here for an authenticator matching `credentialID`
+    for (const dev of devices) {
+      if (isoUint8Array.areEqual(dev.credentialID, bodyCredIDBuffer)) {
+        dbAuthenticator = dev;
+        break;
+      }
+    }
+
+    if (isUndefined(dbAuthenticator)) {
+      return res
+        .status(400)
+        .send({ error: { message: 'Authenticator is not registered with this site' } });
+    }
+
+    let verification;
+    try {
+      const opts = {
+        response: body,
+        expectedChallenge: `${expectedChallenge}`,
+        expectedOrigin,
+        expectedRPID: rpID,
+        authenticator: dbAuthenticator,
+        requireUserVerification: true
+      };
+      verification = await verifyAuthenticationResponse(opts);
+    } catch (error) {
+      console.error(error);
+      return res.status(400).send({ error: error.message });
+    }
+
+    const { verified, authenticationInfo } = verification;
+
+    if (verified) {
+      // Update the authenticator's counter in the DB to the newest count in the authentication
+      dbAuthenticator.counter = authenticationInfo.newCounter;
+    }
+
+    return res.send({ verified });
   } catch (error) {
-    console.error(error);
-    return res.status(400).send({ error: error.message });
+    console.log(error);
   }
-
-  // console.log('verification', verification);
-
-  const { verified, authenticationInfo } = verification;
-
-  if (verified) {
-    // Update the authenticator's counter in the DB to the newest count in the authentication
-    dbAuthenticator.counter = authenticationInfo.newCounter;
-  }
-
-  return res.send({ verified });
 };
 
 const index = async (req, res) => {
   const usersSnapshot = await getDocs(users);
-  const usersData = usersSnapshot.docs.map(doc => doc.data());
+  const usersData = usersSnapshot.docs.map(doc => {
+    return { id: doc.id, ...doc.data() };
+  });
 
   return res.json({ usersData });
 };
@@ -288,7 +306,7 @@ const view = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, password, email, type, isActive, modules, enrollmentStatus } = req.body;
+  const { name, address, email, password, type } = req.body;
 
   try {
     // Get user data
@@ -298,16 +316,33 @@ const create = async (req, res) => {
       throw new Error(errorMessages.USERALREADYEXISTS);
     }
 
-    const modulesCol = collection(db, 'modules');
+    const newUserData = {
+      name,
+      address,
+      email,
+      type,
+      is_active: true,
+      is_locked: false,
+      failed_login_attempts: 0
+    };
 
-    // Check if modules exist in the "modules" collection
-    for (const moduleId of modules) {
-      const moduleRef = doc(modulesCol, moduleId);
-      const moduleDoc = await getDoc(moduleRef);
+    if (type === userTypeEnum.STUDENT) {
+      const { modules, enrollmentStatus } = req.body;
 
-      if (!moduleDoc.exists()) {
-        throw new Error(`Module ${moduleId} does not exist`);
+      const modulesCollection = collection(db, 'modules');
+      const modulesSnapshot = await getDocs(modulesCollection);
+      const modulesIdData = modulesSnapshot.docs.map(doc => doc.id);
+
+      for (let i = 0; i < modules.length; i++) {
+        const el = modulesIdData.find(el => el === modules[i]);
+
+        if (isUndefined(el)) {
+          throw new Error(`Module ${moduleId} does not exist`);
+        }
       }
+
+      newUserData.modules = modules;
+      newUserData.enrollment_status = enrollmentStatus;
     }
 
     return bcrypt.hash(password, config.salt, async (err, hash) => {
@@ -316,17 +351,7 @@ const create = async (req, res) => {
       }
 
       // Create new user, default to being a STUDENT
-      const resp = await addDoc(users, {
-        name,
-        password: hash,
-        email,
-        type,
-        is_active: isActive,
-        is_locked: false,
-        failed_login_attempts: 0,
-        modules,
-        enrollment_status: enrollmentStatus
-      });
+      const resp = await addDoc(users, { ...newUserData, password: hash });
 
       // Fetch the user data from the newly created user
       const userData = await getUserById(resp.id);
@@ -334,59 +359,61 @@ const create = async (req, res) => {
       let returnObject;
 
       // Check if the user exists (userData is not null)
-      if (userData.exists()) {
-        if (userData.type === userTypeEnum.STUDENT) {
-          // Create a Student object with the retrieved data
-          returnObject = new Student(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts,
-            userData.modules,
-            userData.enrollment_status
-          );
-        } else if (userData.type === userTypeEnum.STAFF) {
-          // Create a staff object with the retrieved data
-          returnObject = new Staff(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts,
-            userData.modules
-          );
-        } else if (userData.type === userTypeEnum.ADMIN) {
-          // Create an Admin object with the retrieved data
-          returnObject = new Admin(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts
-          );
-        } else {
-          // Create a User object with the retrieved data
-          returnObject = new User(
-            resp.id,
-            userData.name,
-            userData.password,
-            userData.email,
-            userData.type,
-            userData.is_active,
-            userData.is_locked,
-            userData.failed_login_attempts
-          );
-        }
+      if (userData.type === userTypeEnum.STUDENT) {
+        // Create a Student object with the retrieved data
+        returnObject = new Student(
+          resp.id,
+          userData.name,
+          userData.address,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts,
+          userData.modules,
+          userData.enrollment_status
+        );
+      } else if (userData.type === userTypeEnum.STAFF) {
+        // Create a staff object with the retrieved data
+        returnObject = new Staff(
+          resp.id,
+          userData.name,
+          userData.address,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts,
+          userData.modules
+        );
+      } else if (userData.type === userTypeEnum.ADMIN) {
+        // Create an Admin object with the retrieved data
+        returnObject = new Admin(
+          resp.id,
+          userData.name,
+          userData.address,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts
+        );
+      } else {
+        // Create a User object with the retrieved data
+        returnObject = new User(
+          resp.id,
+          userData.name,
+          userData.address,
+          userData.password,
+          userData.email,
+          userData.type,
+          userData.is_active,
+          userData.is_locked,
+          userData.failed_login_attempts
+        );
       }
 
       // checks if hashedPassword matches the one stored in DB
@@ -404,111 +431,25 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, password, email, isActive, modules, enrollmentStatus } = req.body;
+  const { id, name, email, address } = req.body;
 
   try {
-    // Get current user information via email
     const userRef = doc(db, 'users', id);
     const userDataRef = await getDoc(userRef);
 
     // Update user information
-    const userData = { ...userDataRef.data() };
-
-    // Update name if provided and not empty
-    if (!isUndefined(name) && name !== '') {
-      userData.name = name;
-    }
-
-    // Update password if provided and not empty
-    if (!isUndefined(password) && password !== '') {
-      userData.password = password;
-    }
-
-    // Update email if provided and not empty
-    if (!isUndefined(email) && email !== '') {
-      userData.email = email;
-    }
-
-    // Update is_active if provided and not empty
-    if (!isUndefined(isActive)) {
-      userData.is_active = isActive;
-    }
-
-    // Update modules if provided and not empty
-    if (!isUndefined(modules)) {
-      userData.modules = modules;
-    }
-
-    // Update enrollmentStatus if provided and not empty
-    if (!isUndefined(enrollmentStatus)) {
-      userData.enrollmentStatus = enrollmentStatus;
-    }
+    const userData = userDataRef.data();
+    userData.name = name;
+    userData.email = email;
+    userData.address = address;
 
     // Update in Firebase
     await setDoc(userRef, userData);
 
-    // Retrieve the updated user
-    const updatedUserData = await getDoc(userRef);
-
-    let returnObject;
-
-    if (updatedUserData.type === userTypeEnum.STUDENT) {
-      // Create a Student object with the retrieved data
-      returnObject = new Student(
-        id,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts,
-        updatedUserData.modules,
-        updatedUserData.enrollment_status
-      );
-    } else if (data.type === userTypeEnum.STAFF) {
-      // Create a staff object with the retrieved data
-      returnObject = new Staff(
-        id,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts,
-        updatedUserData.modules
-      );
-    } else if (updatedUserData.type === userTypeEnum.ADMIN) {
-      // Create an Admin object with the retrieved data
-      returnObject = new Admin(
-        id,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts
-      );
-    } else {
-      // Create a User object with the retrieved data
-      returnObject = new User(
-        id,
-        updatedUserData.name,
-        updatedUserData.password,
-        updatedUserData.email,
-        updatedUserData.type,
-        updatedUserData.is_active,
-        updatedUserData.is_locked,
-        updatedUserData.failed_login_attempts
-      );
-    }
-
-    return res.json(returnObject);
+    return res.json({ success: true, message: 'User update completed!' });
   } catch (error) {
     console.error('Error updating user:', error);
-    return res.json({ message: 'User update failed!' });
+    return res.json({ success: false, message: errorMessages.USERUPDATEFAILED });
   }
 };
 
@@ -617,7 +558,7 @@ const destroySession = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  let { email, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // Get current user information via email
