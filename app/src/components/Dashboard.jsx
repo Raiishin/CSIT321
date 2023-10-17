@@ -33,20 +33,19 @@ const Dashboard = () => {
         className={`grid grid-cols-${
           userType === userTypeEnum.STAFF ? 2 : 3
         } gap-10 bg-light-cyan justify-items-center content-center h-[40vh]`}>
-        {userType === userTypeEnum.STUDENT ||
-          (userType === userTypeEnum.STAFF && (
-            <>
-              <button onClick={() => navigate('/timetable')}>
-                <img src={viewTimetableImage} alt="viewTimetableImage" class="w-40" />
-              </button>
+        {(userType === userTypeEnum.STUDENT || userType === userTypeEnum.STAFF) && (
+          <>
+            <button onClick={() => navigate('/timetable')}>
+              <img src={viewTimetableImage} alt="viewTimetableImage" class="w-40" />
+            </button>
 
-              {userType === userTypeEnum.STUDENT && (
-                <button onClick={() => navigate('/attendance')}>
-                  <img src={takeAttendanceImage} alt="takeAttendanceImage" class="w-40" />
-                </button>
-              )}
-            </>
-          ))}
+            {userType === userTypeEnum.STUDENT && (
+              <button onClick={() => navigate('/attendance')}>
+                <img src={takeAttendanceImage} alt="takeAttendanceImage" class="w-40" />
+              </button>
+            )}
+          </>
+        )}
 
         {userType === userTypeEnum.ADMIN && (
           <>

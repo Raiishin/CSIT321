@@ -17,7 +17,9 @@ const Timetable = () => {
     'Date & Time',
     'Type',
     'Lecturer',
-    ...(userType === userTypeEnum.STAFF && ['# of Students', '# of Attendees', 'Attendance Rate'])
+    ...(userType === userTypeEnum.STAFF
+      ? ['# of Students', '# of Attendees', 'Attendance Rate']
+      : [])
   ];
 
   const formattedTableRow = child => {
