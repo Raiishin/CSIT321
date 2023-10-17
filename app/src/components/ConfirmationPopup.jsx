@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import useGlobalStore from '../store/globalStore';
 
 const ConfirmationPopup = ({ onCancel, onConfirm }) => {
-  const [timer, setTimer] = useState(15); // Countdown timer (15 seconds)
+  const [timer, setTimer] = useState(15);
   const navigate = useNavigate();
   const reset = useGlobalStore(state => state.reset);
 

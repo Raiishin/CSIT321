@@ -20,9 +20,6 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
-app.set('trust proxy', 1);
-app.get('/ip', (request, response) => response.send(request.ip));
-
 app.set('trust proxy', 3);
 
 const { ENABLE_HTTPS, rpID } = process.env;
