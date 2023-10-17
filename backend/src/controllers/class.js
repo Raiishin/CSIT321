@@ -43,8 +43,6 @@ const index = async (req, res) => {
     for (let i = 0; i < moduleIds.length; i++) {
       const moduleId = moduleIds[i];
 
-      const totalStudents = await getTotalStudentsByModuleId(moduleIds[i]);
-
       const moduleDocRef = doc(modules, moduleId);
       const moduleDocSnapshot = await getDoc(moduleDocRef);
 
@@ -62,37 +60,37 @@ const index = async (req, res) => {
         const userDocRef = doc(users, classData.lecturer_id);
         const userDocSnapshot = await getDoc(userDocRef);
 
-        const attendees = await getAttendanceByClassId(classData.id);
-
         if (userDocSnapshot.exists()) {
           const lecturerName = userDocSnapshot.data().name;
-          
+
           // Create a new instance of the Classes class for each class
           const classObj = new Class(
-          classData.id,
-          classData.date,
-          classData.start_time,
-          classData.end_time,
-          lecturerName,
-          classData.period,
-          classData.type,
-          classData.venue
-        );
-          
-        // Add totalStudents property to the classObj if the user is a staff member
-        if (userData.type === userTypeEnum.STAFF) {
-          classObj.totalStudents = totalStudents;
-          classObj.attendees = attendees.length;
-        }
+            classData.id,
+            classData.date,
+            classData.start_time,
+            classData.end_time,
+            lecturerName,
+            classData.period,
+            classData.type,
+            classData.venue
+          );
 
-        // Initialize the classes array if not already present
-        if (!classesByModule.hasOwnProperty(moduleId)) {
-          classesByModule[moduleId] = [{ ...classObj, moduleId, moduleName }];
-        } else {
-          // Push the classObj to the classes array
-          classesByModule[moduleId].push({ ...classObj, moduleId, moduleName });
-        }
+          // Add totalStudents property to the classObj if the user is a staff member
+          if (userData.type === userTypeEnum.STAFF) {
+            const totalStudents = await getTotalStudentsByModuleId(moduleIds[i]);
+            const attendees = await getAttendanceByClassId(classData.id);
 
+            classObj.totalStudents = totalStudents;
+            classObj.attendees = attendees.length;
+          }
+
+          // Initialize the classes array if not already present
+          if (!classesByModule.hasOwnProperty(moduleId)) {
+            classesByModule[moduleId] = [{ ...classObj, moduleId, moduleName }];
+          } else {
+            // Push the classObj to the classes array
+            classesByModule[moduleId].push({ ...classObj, moduleId, moduleName });
+          }
         }
       }
     }

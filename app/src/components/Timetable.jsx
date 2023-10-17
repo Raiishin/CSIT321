@@ -3,13 +3,22 @@ import { getClasses } from '../api/class';
 import useGlobalStore from '../store/globalStore';
 import { ColorRing } from 'react-loader-spinner';
 import { isUndefined } from 'lodash';
+import userTypeEnum from '../constants/userTypeEnum';
 
 const Timetable = () => {
   const [classes, setClasses] = useState([]);
   const [modules, setModules] = useState([]);
 
   const userId = useGlobalStore(state => state.userId);
-  const tableHeaders = ['Module Code', 'Venue', 'Date & Time', 'Type', 'Lecturer'];
+  const userType = useGlobalStore(state => state.userType);
+  const tableHeaders = [
+    'Module Code',
+    'Venue',
+    'Date & Time',
+    'Type',
+    'Lecturer',
+    ...(userType === userTypeEnum.STAFF && ['# of Students', '# of Attendees', 'Attendance Rate'])
+  ];
 
   const formattedTableRow = child => {
     return <td class="p-3 text-sm font-semibold tracking-wide text-left">{child}</td>;
@@ -53,6 +62,14 @@ const Timetable = () => {
                         )}
                         {classItem.type ? formattedTableRow(classItem?.type) : <td />}
                         {formattedTableRow(`${classItem?.lecturerName}`)}
+                        {userType === userTypeEnum.STAFF &&
+                          formattedTableRow(`${classItem?.totalStudents}`)}
+                        {userType === userTypeEnum.STAFF &&
+                          formattedTableRow(`${classItem?.attendees}`)}
+                        {userType === userTypeEnum.STAFF &&
+                          formattedTableRow(
+                            `${(classItem?.attendees / classItem?.totalStudents) * 100}%`
+                          )}
                       </tr>
                     </>
                   ))}
