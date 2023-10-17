@@ -1,9 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import ModuleController from './src/controllers/module.js';
 import UserController from './src/controllers/user.js';
 import ClassController from './src/controllers/class.js';
-import AttendanceLogsController from './src/controllers/attendanceLogs.js';
+import AttendanceLogController from './src/controllers/attendanceLog.js';
 import https from 'https';
 import http from 'http';
 import fs from 'fs';
@@ -59,6 +60,8 @@ http.createServer(app).listen(port, () => console.log('Application Started at: '
 
 const router = express.Router();
 
+router.get('/modules', rateLimit(rateLimitConfig), ModuleController.index);
+
 router.get('/users', rateLimit(rateLimitConfig), UserController.index);
 router.get(
   '/user/session',
@@ -83,7 +86,7 @@ router.delete('/user', rateLimit(rateLimitConfig), UserController.destroy);
 
 router.get('/classes', rateLimit(rateLimitConfig), ClassController.index);
 
-router.post('/attendance/mark', rateLimit(rateLimitConfig), AttendanceLogsController.create);
+router.post('/attendance/mark', rateLimit(rateLimitConfig), AttendanceLogController.create);
 
 router.get(
   '/generate/registration',

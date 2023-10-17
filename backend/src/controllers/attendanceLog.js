@@ -1,3 +1,4 @@
+// Attendance Log Controller
 import { differenceInMinutes, isBefore, isAfter } from 'date-fns';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore/lite';

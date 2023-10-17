@@ -4,6 +4,7 @@ class Student extends User {
   constructor(
     id,
     name,
+    address,
     password,
     email,
     type,
@@ -13,7 +14,7 @@ class Student extends User {
     modules,
     enrollmentStatus
   ) {
-    super(id, name, password, email, type, isActive, isLocked, failedLoginAttempts);
+    super(id, name, address, password, email, type, isActive, isLocked, failedLoginAttempts);
 
     this.modules = modules;
     this.enrollmentStatus = enrollmentStatus;

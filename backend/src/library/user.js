@@ -31,7 +31,7 @@ export const getUserById = async userId => {
     throw new Error(errorMessages.USERNOTFOUND);
   }
 
-  return userDocSnapshot.data();
+  return { id: userDocSnapshot.id, ...userDocSnapshot.data() };
 };
 
 /**

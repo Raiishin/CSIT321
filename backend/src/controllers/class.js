@@ -1,4 +1,4 @@
-// Classes Controller
+// Class Controller
 import { initializeApp } from 'firebase/app';
 import {
   getFirestore,

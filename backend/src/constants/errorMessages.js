@@ -7,5 +7,6 @@ export default {
   UNABLETOMARKATTENDANCE: 'You cannot mark attendance for this class',
   ACCOUNTLOCKED: 'Account is locked. Contact admin for support',
   ATTENDANCEMARKED: 'Attendance for this class has already been marked',
-  NOCLASSESAVAILABLE: "You don't have any more classes to attend for this semester"
+  NOCLASSESAVAILABLE: "You don't have any more classes to attend for this semester",
+  USERUPDATEFAILED: 'User update failed'
 };

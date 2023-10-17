@@ -20,3 +20,21 @@ export const resetPassword = async (email, password) => {
 
   return data;
 };
+
+export const getAllUserData = async () => {
+  const { data } = await axios.get(`${baseEndpoint}s`);
+
+  return data;
+};
+
+export const updateUser = async (id, name, email, address) => {
+  const { data } = await axios.post(`${baseEndpoint}/update`, { id, name, email, address });
+
+  return data;
+};
+
+export const createUser = async params => {
+  const { data } = await axios.post(`${baseEndpoint}/create`, params);
+
+  return data;
+};
