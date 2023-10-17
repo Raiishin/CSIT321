@@ -12,6 +12,7 @@ import Class from '../models/class.js';
 import config from '../config/index.js';
 import { isAfter, isBefore, isSameDay } from 'date-fns';
 import { convertTimeStringToDate } from './index.js';
+import errorMessages from '../constants/errorMessages.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -20,6 +21,43 @@ const db = getFirestore(app);
 const classes = collection(db, 'classes');
 const modules = collection(db, 'modules');
 const users = collection(db, 'users');
+
+/**
+ * @param {string} classId
+ * @returns an object from firebase
+ * @throws an error message if class is not found
+ */
+export const getClassById = async classId => {
+  // Get user data
+  const classDocRef = doc(classes, classId);
+  const classDocSnapshot = await getDoc(classDocRef);
+
+  // Check if user exists
+  if (!classDocSnapshot.exists()) {
+    throw new Error(errorMessages.CLASSNOTFOUND);
+  }
+
+  return classDocSnapshot.data();
+};
+
+/**
+ * @param {string} moduleId
+ * @returns an array of class id from firebase
+ * @throws an error message if class is not found
+ */
+export const getClassesIdByModuleId = async moduleId => {
+
+  const searchQuery = query(classes, where('module_id', '==', moduleId));
+  const classDocSnapshot = await getDocs(searchQuery);
+
+  if (classDocSnapshot.length === 0) {
+    throw new Error(errorMessages.CLASSNOTFOUND);
+  }
+
+  const classIds = classDocSnapshot.docs.map(doc => doc.id);
+  return classIds;
+};
+
 
 export const sortClasses = classesByModuleArr => {
   const arr = [...classesByModuleArr];
