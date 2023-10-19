@@ -60,13 +60,6 @@ const inMemoryUserDeviceDB = {
 const generateRegistration = async (req, res) => {
   const { userId } = req.query;
   try {
-    // Query for user from firebase
-    // const usersData = await getDoc(doc(db, 'users', userId));
-
-    // const user = usersData.data();
-
-    // const devices = JSON.parse(user.devices);
-
     if (!inMemoryUserDeviceDB.hasOwnProperty(userId)) {
       inMemoryUserDeviceDB[userId] = {
         id: userId,
@@ -79,7 +72,6 @@ const generateRegistration = async (req, res) => {
 
     const { devices } = user;
 
-    // The username can be a human-readable name, email, etc... as it is intended only for display.
     const options = await generateRegistrationOptions({
       rpName: 'CSIT321 FYP',
       rpID,
@@ -122,13 +114,6 @@ const generateAuthentication = async (req, res) => {
       userId = userData.id;
     }
 
-    // Query for user from firebase
-    // const usersData = await getDoc(doc(db, 'users', userId));
-
-    // const user = usersData.data();
-
-    // const devices = JSON.parse(user.devices);
-
     const user = inMemoryUserDeviceDB[userId];
 
     const { devices } = user;
@@ -158,12 +143,6 @@ const registerUser = async (req, res) => {
 
     const { devices } = user;
 
-    // Query for authenticator from firebase
-    // const authenticatorRef = doc(db, 'authenticators', userId);
-    // const authenticatorsData = await getDoc(authenticatorRef);
-
-    // const devices = authenticatorsData.exists() ? authenticatorsData.data() : [];
-
     const verification = await verifyRegistrationResponse({
       response: body,
       expectedChallenge: `${expectedChallenge}`,
@@ -174,8 +153,6 @@ const registerUser = async (req, res) => {
 
     const { verified, registrationInfo } = verification;
 
-    // NOTE :: devices must store credentialID in Uint8Array format else will break
-
     if (!isUndefined(verified) && !isUndefined(registrationInfo)) {
       const { credentialPublicKey, credentialID, counter } = registrationInfo;
 
@@ -184,9 +161,7 @@ const registerUser = async (req, res) => {
       );
 
       if (!existingDevice) {
-        /**
-         * Add the returned device to the user's list of devices
-         */
+        // Add the returned device to the user's list of devices
         const newDevice = {
           credentialPublicKey,
           credentialID,
@@ -195,14 +170,6 @@ const registerUser = async (req, res) => {
         };
 
         devices.push(newDevice);
-
-        // NOTE ERROR :: Unspported field -> Uint8Array
-        // const res = await setDoc(doc(db, 'authenticators', userId), {
-        //   credentialPublicKey,
-        //   credentialID,
-        //   counter,
-        //   transports: body.response.transports
-        // });
       }
     }
 
@@ -224,13 +191,6 @@ const authenticateUser = async (req, res) => {
 
       userId = userData.id;
     }
-
-    // Query for user from firebase
-    // const usersData = await getDoc(doc(db, 'users', userId));
-
-    // const user = usersData.data();
-
-    // const devices = JSON.parse(user.devices);
 
     const user = inMemoryUserDeviceDB[userId];
 
@@ -480,6 +440,8 @@ const destroy = async (req, res) => {
 const login = async (req, res) => {
   const { email, password } = req.body;
 
+  console.log('req.session', req.session);
+
   try {
     // Get user data
     const { id } = await getUserByEmail(email);
@@ -505,7 +467,6 @@ const login = async (req, res) => {
           throw new Error(err);
         }
 
-        // Check if the user is active and if account is locked
         // Check if passwords match
         if (result) {
           const session = req.session; // Create session for user

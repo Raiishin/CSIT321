@@ -18,6 +18,9 @@ const attendanceLogs = collection(db, 'attendance_logs');
 
 const create = async (req, res) => {
   const { userId } = req.body;
+  console.log('req.session', req.session);
+  console.log('req.cookie', req.cookie);
+  console.log('req.cookies', req.cookies);
 
   try {
     // Get user data
