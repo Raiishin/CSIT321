@@ -21,7 +21,8 @@ import Admin from '../models/admin.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
 import { isUndefined } from 'lodash-es';
 import errorMessages from '../constants/errorMessages.js';
-import { getUserById, getUserByEmail } from '../library/user.js';
+import { getUserById, getUserByEmail, checkSession } from '../library/user.js';
+
 import dotenv from 'dotenv';
 import {
   generateRegistrationOptions,
@@ -269,6 +270,8 @@ const create = async (req, res) => {
   const { name, address, email, password, type } = req.body;
 
   try {
+    await checkSession(req);
+
     // Get user data
     const user = await getUserByEmail(email, false);
 
@@ -394,6 +397,8 @@ const update = async (req, res) => {
   const { id, name, email, address } = req.body;
 
   try {
+    await checkSession(req);
+
     const userRef = doc(db, 'users', id);
     const userDataRef = await getDoc(userRef);
 
@@ -505,6 +510,8 @@ const resetPassword = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    await checkSession(req);
+
     // Get current user information via email
     const searchQuery = query(users, where('email', '==', email));
     const usersData = await getDocs(searchQuery);
