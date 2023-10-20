@@ -20,6 +20,10 @@ const create = async (req, res) => {
   const { userId } = req.body;
 
   try {
+    if (isUndefined(req.cookies)) {
+      throw new Error(errorMessages.UNKNOWNSESSION);
+    }
+
     // Get user data
     const userData = await getUserById(userId);
 
