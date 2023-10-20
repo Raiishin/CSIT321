@@ -10,5 +10,6 @@ export default {
   NOCLASSESAVAILABLE: "You don't have any more classes to attend for this semester",
   USERUPDATEFAILED: 'User update failed',
   CLASSNOTFOUND: 'Class ID is not found',
-  LECTURERNOTFOUND: 'User is not a Lecturer'
+  LECTURERNOTFOUND: 'User is not a Lecturer',
+  UNKNOWNSESSION: 'Unknown session has been detected'
 };
