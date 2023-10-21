@@ -33,6 +33,19 @@ export const updateUser = async (id, name, email, address) => {
   return data;
 };
 
+export const unlockUser = async id => {
+  /* 
+  Since ID is unique, we can use it in our request
+  to backend to unlock the user's account
+
+  Probably doesn't work since backend/controller/user.js 
+  doesn't have an API endpoint for this
+  */
+  const { data } = await axios.post(`${baseEndpoint}/unlock`, { id });
+
+  return data;
+};
+
 export const createUser = async params => {
   const { data } = await axios.post(`${baseEndpoint}/create`, params);
 
