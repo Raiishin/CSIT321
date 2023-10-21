@@ -132,11 +132,42 @@ test ('Validate sort classes', async () => {
   },
 ]
 `);
+
+  //Invalid Sort class
+  try {
+    const result = sortClasses("Invalid_Sort_Classes");
+    expect(result).toMatchInlineSnapshot();
+} catch (error) {
+    expect(error).toMatchInlineSnapshot(`[TypeError: Cannot read properties of undefined (reading 'substring')]`);
+  }
+
 });
 
 test ('Retrieve latest classes', async () => {
 
-    //Valid Class ID
-    expect(await latestClass(["CSIT314", "CSCI376"])).toMatchInlineSnapshot(`undefined`);
+  //Valid Module ID
+  expect(await latestClass(["CSIT321"])).toMatchInlineSnapshot(`
+  {
+    "date": "2024-05-02",
+    "endTime": "22:00",
+    "id": "Y6TIrgYrfsZH9Fnrt4F1",
+    "lecturerName": "Sionggo Japit",
+    "moduleId": "CSIT321",
+    "moduleName": "Project",
+    "period": "PT",
+    "startTime": "19:00",
+    "type": "Lecture",
+    "venue": "A.1.09",
+  }
+  `);
+
+  //Invalid Module Id
+  try {
+    const result = await latestClass('Invalid_Module_Id');
+    expect(result).toMatchInlineSnapshot();
+  } catch (error) {
+      expect(error).toMatchInlineSnapshot(`[TypeError: Cannot read properties of undefined (reading 'name')]`);
+    }
+
 
 });
