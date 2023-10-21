@@ -29,6 +29,7 @@ const ManageAccounts = () => {
   const handleUnlock = async () => {
     // code to send an unlock request to the server
     // const unlockResponse = await unlockUser(userId);
+
     console.log('Sent unlock request');
     /* if the unlock request was successful, 
     re-retrieve all the users' data from the server
@@ -61,7 +62,7 @@ const ManageAccounts = () => {
     }
 
     getAllUsers();
-  }, [userId, setPreviousPath, navigate, previousPath, updating]);
+  }, [userId, setPreviousPath, navigate, previousPath, updating, userData]);
 
   return (
     <div>
