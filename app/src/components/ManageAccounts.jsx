@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { capitalize, isUndefined } from 'lodash-es';
 import editIcon from '../assets/editing.png';
 import useGlobalStore from '../store/globalStore';
-import { getAllUserData } from '../api/user';
+import { getAllUserData, unlockUser } from '../api/user';
 import userTypeEnum from '../constants/userTypeEnum';
 import Loading from './Loading';
 
@@ -14,10 +14,7 @@ const ManageAccounts = () => {
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState([]);
-
-  const handleUnlock = async () =>
-    // code to send an unlock request to the server
-    {};
+  const [updating, setUpdating] = useState(false);
 
   const getUserTypeText = type => {
     const keys = Object.keys(userTypeEnum);
@@ -29,6 +26,32 @@ const ManageAccounts = () => {
     }
   };
 
+  const handleUnlock = async () => {
+    // code to send an unlock request to the server
+    // const unlockResponse = await unlockUser(userId);
+    console.log('Sent unlock request');
+    /* if the unlock request was successful, 
+    re-retrieve all the users' data from the server
+    to conveniently show other accounts that may have
+    new lock statuses
+    */
+    getAllUsers();
+    console.log('Running getAllUsers() in handleUnlock()...');
+  };
+
+  const getAllUsers = async () => {
+    try {
+      setLoading(true);
+      const { usersData: data } = await getAllUserData();
+      setUserData(data);
+      console.log('data', data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+    setUpdating(false);
+  };
+
   useEffect(() => {
     // if the user is not logged in, redirect to the login page using Navigate
     if (isUndefined(userId) || userType !== userTypeEnum.ADMIN) {
@@ -37,19 +60,8 @@ const ManageAccounts = () => {
       navigate('/login');
     }
 
-    const getAllUsers = async () => {
-      try {
-        const { usersData: data } = await getAllUserData();
-        setUserData(data);
-        console.log('data', data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
     getAllUsers();
-  }, [userId, setPreviousPath, navigate, previousPath]);
+  }, [userId, setPreviousPath, navigate, previousPath, updating]);
 
   return (
     <div>
@@ -98,13 +110,13 @@ const ManageAccounts = () => {
                     </td>
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
                       {data.is_locked ? (
-                        <button className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
+                        <button
+                          onClick={() => handleUnlock(data.userId)}
+                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
                           Unlock
                         </button>
                       ) : (
-                        <button
-                          onClick={handleUnlock}
-                          class="bg-transparent hover:bg-blue-500 text-slate-400 font-semibold  py-2 px-4 border border-blue-500 rounded cursor-not-allowed w-28">
+                        <button class="bg-transparent hover:bg-blue-500 text-slate-400 font-semibold  py-2 px-4 border border-blue-500 rounded cursor-not-allowed w-28">
                           Not Locked
                         </button>
                       )}
