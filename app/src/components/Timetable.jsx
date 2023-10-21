@@ -20,10 +20,26 @@ const Timetable = () => {
     ...(userType === userTypeEnum.STAFF
       ? ['# of Students', '# of Attendees', 'Attendance Rate']
       : [])
+
+    ,...(userType === userTypeEnum.STUDENT
+        ? ['Attendance Status']
+        : [])
   ];
 
   const formattedTableRow = child => {
     return <td class="p-3 text-sm font-semibold tracking-wide text-left">{child}</td>;
+  };
+
+  const checkAttendanceStatus = (classItem) => {
+    if (classItem?.attendanceStatus === 0) {
+      return 'Absent';
+    } 
+    if (classItem?.attendanceStatus === 1) {
+      return 'Present';
+    }
+    else {
+      return 'Unmarked';
+    }
   };
 
   useEffect(() => {
@@ -52,7 +68,6 @@ const Timetable = () => {
                 <thead class="bg-light-gray">
                   <tr>{tableHeaders.map(tableHeader => formattedTableRow(tableHeader))}</tr>
                 </thead>
-
                 <tbody>
                   {classes[module].map((classItem, index) => (
                     <>
@@ -71,7 +86,10 @@ const Timetable = () => {
                         {userType === userTypeEnum.STAFF &&
                           formattedTableRow(
                             `${(classItem?.attendees / classItem?.totalStudents) * 100}%`
-                          )}
+                        )}
+                        {userType === userTypeEnum.STUDENT && 
+                          formattedTableRow
+                          (checkAttendanceStatus(classItem))}
                       </tr>
                     </>
                   ))}
