@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUser } from '../api/user';
 import { getModules } from '../api/module';
-import useGlobalStore from '../store/globalStore';
 import { isUndefined, isString } from 'lodash-es';
 import {
   Radio,
@@ -45,7 +44,6 @@ const CreateAccount = () => {
   const [errors, setErrors] = useState({}); // to store validation errors
 
   const navigate = useNavigate();
-  const globalStore = useGlobalStore();
 
   const handleSubmit = async e => {
     e.preventDefault();
