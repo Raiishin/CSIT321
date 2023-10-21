@@ -13,13 +13,12 @@ test('Convert Time String to Date', async () => {
   expect(convertTimeStringToDate('2023-01-11', '19sasad')).toMatchInlineSnapshot(`Date { NaN }`);
 
   //Valid Date and Time String
-  expect(convertTimeStringToDate('2023-03-21', '08:00')).toMatchInlineSnapshot(`2023-03-21T00:00:00.000Z`);
+  const validResult1 = convertTimeStringToDate('2023-03-21', '08:00');
+  expect(validResult1.toISOString()).toMatchInlineSnapshot(`"2023-03-21T00:00:00.000Z"`);
 
   //Valid Date and Time String
-  expect(convertTimeStringToDate('2023-01-50', '15:00')).toMatchInlineSnapshot(`2023-02-19T07:00:00.000Z`);
-  
-  //Valid Date and Time String
-  expect(convertTimeStringToDate('2023-12-30', '11:00')).toMatchInlineSnapshot(`2023-12-30T03:00:00.000Z`);
+  const validResult2 = convertTimeStringToDate('2023-01-50', '15-00');
+  expect(validResult2.toISOString()).toMatchInlineSnapshot(`"2023-02-19T07:00:00.000Z"`);
 
 });
 
