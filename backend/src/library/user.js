@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
+import { isUndefined, isEmpty } from 'lodash-es';
 import errorMessages from '../constants/errorMessages.js';
 
 // Initialize Firebase
@@ -64,7 +65,6 @@ export const getUserByEmail = async (email, throwError = true) => {
  * @throws an error message if no users are found
  */
 export const getTotalStudentsByModuleId = async moduleId => {
-  
   // Get user data
   const searchQuery = query(
     users,
@@ -79,4 +79,10 @@ export const getTotalStudentsByModuleId = async moduleId => {
   }
 
   return usersData.docs.length;
+};
+
+export const checkSession = async req => {
+  if (isEmpty(req.cookies) || isUndefined(req.cookies['connect.sid'])) {
+    throw new Error(errorMessages.UNKNOWNSESSION);
+  }
 };

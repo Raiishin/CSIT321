@@ -21,7 +21,8 @@ import Admin from '../models/admin.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
 import { isUndefined } from 'lodash-es';
 import errorMessages from '../constants/errorMessages.js';
-import { getUserById, getUserByEmail } from '../library/user.js';
+import { getUserById, getUserByEmail, checkSession } from '../library/user.js';
+
 import dotenv from 'dotenv';
 import {
   generateRegistrationOptions,
@@ -60,13 +61,6 @@ const inMemoryUserDeviceDB = {
 const generateRegistration = async (req, res) => {
   const { userId } = req.query;
   try {
-    // Query for user from firebase
-    // const usersData = await getDoc(doc(db, 'users', userId));
-
-    // const user = usersData.data();
-
-    // const devices = JSON.parse(user.devices);
-
     if (!inMemoryUserDeviceDB.hasOwnProperty(userId)) {
       inMemoryUserDeviceDB[userId] = {
         id: userId,
@@ -79,7 +73,6 @@ const generateRegistration = async (req, res) => {
 
     const { devices } = user;
 
-    // The username can be a human-readable name, email, etc... as it is intended only for display.
     const options = await generateRegistrationOptions({
       rpName: 'CSIT321 FYP',
       rpID,
@@ -122,13 +115,6 @@ const generateAuthentication = async (req, res) => {
       userId = userData.id;
     }
 
-    // Query for user from firebase
-    // const usersData = await getDoc(doc(db, 'users', userId));
-
-    // const user = usersData.data();
-
-    // const devices = JSON.parse(user.devices);
-
     const user = inMemoryUserDeviceDB[userId];
 
     const { devices } = user;
@@ -158,12 +144,6 @@ const registerUser = async (req, res) => {
 
     const { devices } = user;
 
-    // Query for authenticator from firebase
-    // const authenticatorRef = doc(db, 'authenticators', userId);
-    // const authenticatorsData = await getDoc(authenticatorRef);
-
-    // const devices = authenticatorsData.exists() ? authenticatorsData.data() : [];
-
     const verification = await verifyRegistrationResponse({
       response: body,
       expectedChallenge: `${expectedChallenge}`,
@@ -174,8 +154,6 @@ const registerUser = async (req, res) => {
 
     const { verified, registrationInfo } = verification;
 
-    // NOTE :: devices must store credentialID in Uint8Array format else will break
-
     if (!isUndefined(verified) && !isUndefined(registrationInfo)) {
       const { credentialPublicKey, credentialID, counter } = registrationInfo;
 
@@ -184,9 +162,7 @@ const registerUser = async (req, res) => {
       );
 
       if (!existingDevice) {
-        /**
-         * Add the returned device to the user's list of devices
-         */
+        // Add the returned device to the user's list of devices
         const newDevice = {
           credentialPublicKey,
           credentialID,
@@ -195,14 +171,6 @@ const registerUser = async (req, res) => {
         };
 
         devices.push(newDevice);
-
-        // NOTE ERROR :: Unspported field -> Uint8Array
-        // const res = await setDoc(doc(db, 'authenticators', userId), {
-        //   credentialPublicKey,
-        //   credentialID,
-        //   counter,
-        //   transports: body.response.transports
-        // });
       }
     }
 
@@ -224,13 +192,6 @@ const authenticateUser = async (req, res) => {
 
       userId = userData.id;
     }
-
-    // Query for user from firebase
-    // const usersData = await getDoc(doc(db, 'users', userId));
-
-    // const user = usersData.data();
-
-    // const devices = JSON.parse(user.devices);
 
     const user = inMemoryUserDeviceDB[userId];
 
@@ -309,6 +270,8 @@ const create = async (req, res) => {
   const { name, address, email, password, type } = req.body;
 
   try {
+    await checkSession(req);
+
     // Get user data
     const user = await getUserByEmail(email, false);
 
@@ -434,6 +397,8 @@ const update = async (req, res) => {
   const { id, name, email, address } = req.body;
 
   try {
+    await checkSession(req);
+
     const userRef = doc(db, 'users', id);
     const userDataRef = await getDoc(userRef);
 
@@ -505,7 +470,6 @@ const login = async (req, res) => {
           throw new Error(err);
         }
 
-        // Check if the user is active and if account is locked
         // Check if passwords match
         if (result) {
           const session = req.session; // Create session for user
@@ -536,21 +500,6 @@ const login = async (req, res) => {
   }
 };
 
-const createSession = async (req, res) => {
-  const session = req.session;
-  session.email = req.body.email;
-
-  return res.json({ message: 'Session Variable Set', email: session.userid });
-};
-
-const checkSession = async (req, res) => {
-  return res.send(req.session && req.session.email);
-};
-
-const getSession = async (req, res) => {
-  return res.json({ message: 'Session Variable Retrieved', email: req.session.email });
-};
-
 const destroySession = async (req, res) => {
   req.session.destroy();
 
@@ -561,6 +510,8 @@ const resetPassword = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    await checkSession(req);
+
     // Get current user information via email
     const searchQuery = query(users, where('email', '==', email));
     const usersData = await getDocs(searchQuery);
@@ -617,8 +568,5 @@ export default {
   destroy,
   login,
   resetPassword,
-  createSession,
-  getSession,
-  checkSession,
   destroySession
 };
