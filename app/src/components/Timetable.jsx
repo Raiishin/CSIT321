@@ -20,6 +20,10 @@ const Timetable = () => {
     ...(userType === userTypeEnum.STAFF
       ? ['# of Students', '# of Attendees', 'Attendance Rate']
       : [])
+
+    ,...(userType === userTypeEnum.STUDENT
+        ? ['Attendance Status']
+        : [])
   ];
 
   const formattedTableRow = child => {
@@ -52,7 +56,6 @@ const Timetable = () => {
                 <thead class="bg-light-gray">
                   <tr>{tableHeaders.map(tableHeader => formattedTableRow(tableHeader))}</tr>
                 </thead>
-
                 <tbody>
                   {classes[module].map((classItem, index) => (
                     <>
@@ -71,7 +74,9 @@ const Timetable = () => {
                         {userType === userTypeEnum.STAFF &&
                           formattedTableRow(
                             `${(classItem?.attendees / classItem?.totalStudents) * 100}%`
-                          )}
+                        )}
+                        {userType === userTypeEnum.STUDENT &&
+                        formattedTableRow(`${classItem?.attendanceStatus}`)}
                       </tr>
                     </>
                   ))}
