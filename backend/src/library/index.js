@@ -1,8 +1,3 @@
-export const validatePhoneNumber = phoneNumber => {
-  const pattern = /^[89]\d{7}$/;
-  return pattern.test(phoneNumber);
-};
-
 export const getObjectKey = (obj, value) => Object.keys(obj).find(key => obj[key] === value);
 
 export const convertTimeStringToDate = (date, timeString = '00:00') => {

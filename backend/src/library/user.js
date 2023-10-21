@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
+import errorMessages from '../constants/errorMessages.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
