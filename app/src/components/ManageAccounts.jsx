@@ -15,6 +15,10 @@ const ManageAccounts = () => {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState([]);
 
+  const handleUnlock = async () =>
+    // code to send an unlock request to the server
+    {};
+
   const getUserTypeText = type => {
     const keys = Object.keys(userTypeEnum);
 
@@ -37,6 +41,7 @@ const ManageAccounts = () => {
       try {
         const { usersData: data } = await getAllUserData();
         setUserData(data);
+        console.log('data', data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -67,6 +72,7 @@ const ManageAccounts = () => {
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Email</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Address</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Edit</th>
+                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Unlock</th>
                 </tr>
               </thead>
               <tbody>
@@ -89,6 +95,19 @@ const ManageAccounts = () => {
                       <Link to="/account/edit" state={{ data }}>
                         <img src={editIcon} alt="editIcon" className="w-6" />
                       </Link>
+                    </td>
+                    <td className="p-3 text-sm font-semibold tracking-wide text-left">
+                      {data.is_locked ? (
+                        <button className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
+                          Unlock
+                        </button>
+                      ) : (
+                        <button
+                          onClick={handleUnlock}
+                          class="bg-transparent hover:bg-blue-500 text-slate-400 font-semibold  py-2 px-4 border border-blue-500 rounded cursor-not-allowed w-28">
+                          Not Locked
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
