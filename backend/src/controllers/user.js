@@ -394,7 +394,7 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, email, address } = req.body;
+  const { id, name, email, address, is_locked } = req.body;
 
   try {
     await checkSession(req);
@@ -407,6 +407,7 @@ const update = async (req, res) => {
     userData.name = name;
     userData.email = email;
     userData.address = address;
+    userData.is_locked = is_locked;
 
     // Update in Firebase
     await setDoc(userRef, userData);
