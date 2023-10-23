@@ -118,6 +118,9 @@ const generateAuthentication = async (req, res) => {
 
     const { devices } = user;
 
+    const session = req.session;
+    session.userId = userId;
+
     const options = await generateAuthenticationOptions({
       timeout: 60 * 1000, // (1 minute)
       allowCredentials: devices.map(dev => ({
@@ -195,6 +198,9 @@ const authenticateUser = async (req, res) => {
     const user = inMemoryUserDeviceDB[userId];
 
     const { devices } = user;
+
+    const session = req.session;
+    session.userId = userId;
 
     let dbAuthenticator;
     const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
@@ -476,6 +482,9 @@ const login = async (req, res) => {
 
         // Check if passwords match
         if (result) {
+          const session = req.session;
+          session.userId = userDocSnapshot.id;
+
           userData.failed_login_attempts = 0; // Reset failed login attempts count
           userData.is_locked = false;
 
