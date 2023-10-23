@@ -82,6 +82,8 @@ export const getTotalStudentsByModuleId = async moduleId => {
 };
 
 export const checkSession = async req => {
+  console.log('req.cookies', req.cookies);
+
   if (isEmpty(req.cookies) || isUndefined(req.cookies['connect.sid'])) {
     throw new Error(errorMessages.UNKNOWNSESSION);
   }

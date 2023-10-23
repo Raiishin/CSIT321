@@ -81,12 +81,17 @@ router.get(
 );
 router.get(
   '/generate/authentication',
-  rateLimit(rateLimitConfig),
   session(sessionConf),
+  rateLimit(rateLimitConfig),
   UserController.generateAuthentication
 );
 
 router.post('/verify/registration', rateLimit(rateLimitConfig), UserController.registerUser);
-router.post('/verify/authentication', rateLimit(rateLimitConfig), UserController.authenticateUser);
+router.post(
+  '/verify/authentication',
+  rateLimit(rateLimitConfig),
+  session(sessionConf),
+  UserController.authenticateUser
+);
 
 app.use('/', router); //to use the routes
