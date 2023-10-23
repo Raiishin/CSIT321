@@ -4,6 +4,7 @@ import useGlobalStore from '../store/globalStore';
 import { ColorRing } from 'react-loader-spinner';
 import { isUndefined } from 'lodash';
 import userTypeEnum from '../constants/userTypeEnum';
+import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
 
 const Timetable = () => {
   const [classes, setClasses] = useState([]);
@@ -19,27 +20,23 @@ const Timetable = () => {
     'Lecturer',
     ...(userType === userTypeEnum.STAFF
       ? ['# of Students', '# of Attendees', 'Attendance Rate']
-      : [])
-
-    ,...(userType === userTypeEnum.STUDENT
-        ? ['Attendance Status']
-        : [])
+      : []),
+    ...(userType === userTypeEnum.STUDENT ? ['Attendance Status'] : [])
   ];
 
   const formattedTableRow = child => {
     return <td class="p-3 text-sm font-semibold tracking-wide text-left">{child}</td>;
   };
 
-  const checkAttendanceStatus = (classItem) => {
-    if (classItem?.attendanceStatus === 0) {
-      return 'Absent';
-    } 
-    if (classItem?.attendanceStatus === 1) {
+  const checkAttendanceStatus = attendanceStatus => {
+    if (attendanceStatus === attendanceStatusEnum.PRESENT) {
       return 'Present';
     }
-    else {
-      return 'Unmarked';
+    if (attendanceStatus === attendanceStatusEnum.LATE) {
+      return 'Late';
     }
+
+    return 'Unmarked';
   };
 
   useEffect(() => {
@@ -86,10 +83,9 @@ const Timetable = () => {
                         {userType === userTypeEnum.STAFF &&
                           formattedTableRow(
                             `${(classItem?.attendees / classItem?.totalStudents) * 100}%`
-                        )}
-                        {userType === userTypeEnum.STUDENT && 
-                          formattedTableRow
-                          (checkAttendanceStatus(classItem))}
+                          )}
+                        {userType === userTypeEnum.STUDENT &&
+                          formattedTableRow(checkAttendanceStatus(classItem?.attendanceStatus))}
                       </tr>
                     </>
                   ))}
