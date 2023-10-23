@@ -6,7 +6,7 @@ import { isUndefined } from 'lodash';
 export const generateRegistration = async userId => {
   const { data } = await axios.get(`${config.backendEndpoint}/generate/registration`, {
     params: { userId },
-    withCredentials: true
+    withCredentials: false
   });
 
   return data;
@@ -15,7 +15,7 @@ export const generateRegistration = async userId => {
 export const generateAuthenticationByUserId = async userId => {
   const { data } = await axios.get(`${config.backendEndpoint}/generate/authentication`, {
     params: { userId },
-    withCredentials: true
+    withCredentials: false
   });
 
   return data;
@@ -24,7 +24,7 @@ export const generateAuthenticationByUserId = async userId => {
 export const generateAuthenticationByEmail = async email => {
   const { data } = await axios.get(`${config.backendEndpoint}/generate/authentication`, {
     params: { email },
-    withCredentials: true
+    withCredentials: false
   });
 
   return data;
@@ -32,7 +32,7 @@ export const generateAuthenticationByEmail = async email => {
 
 export const verifyRegistration = async body => {
   const { data } = await axios.post(`${config.backendEndpoint}/verify/registration`, body, {
-    withCredentials: true
+    withCredentials: false
   });
 
   return data;
@@ -40,7 +40,7 @@ export const verifyRegistration = async body => {
 
 export const verifyAuthentication = async body => {
   const { data } = await axios.post(`${config.backendEndpoint}/verify/authentication`, body, {
-    withCredentials: true
+    withCredentials: false
   });
 
   return data;
