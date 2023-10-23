@@ -1,15 +1,38 @@
-import { validatePhoneNumber } from '../../library/index.js';
+import userTypeEnum from '../../constants/userTypeEnum.js';
+import { convertTimeStringToDate, getObjectKey } from '../../library/index.js';
 
-test('Validate phone number', async () => {
-  expect(validatePhoneNumber('12345678')).toMatchInlineSnapshot(`false`);
+describe('Testing library functions', () => {
+  test('convertTimeStringToDate() - Invalid Date String', async () => {
+    expect(convertTimeStringToDate('2023qwe9', '50:00')).toMatchInlineSnapshot(`Date { NaN }`);
+  });
 
-  expect(validatePhoneNumber('81234567')).toMatchInlineSnapshot(`true`);
+  test('convertTimeStringToDate() - Invalid Date Separator', async () => {
+    expect(convertTimeStringToDate('2023=23=11', '23-00')).toMatchInlineSnapshot(`Date { NaN }`);
+  });
 
-  expect(validatePhoneNumber('91234567')).toMatchInlineSnapshot(`true`);
+  test('convertTimeStringToDate() - Invalid Time String', async () => {
+    expect(convertTimeStringToDate('2023-01-11', '19sasad')).toMatchInlineSnapshot(`Date { NaN }`);
+  });
 
-  expect(validatePhoneNumber('01234567')).toMatchInlineSnapshot(`false`);
+  test('convertTimeStringToDate() - Valid Date and Time String', async () => {
+    expect(convertTimeStringToDate('2023-03-21', '08:00')).toMatchInlineSnapshot(
+      `2023-03-21T08:00:00.000Z`
+    );
 
-  expect(validatePhoneNumber('012345678')).toMatchInlineSnapshot(`false`);
+    expect(convertTimeStringToDate('2023-01-50', '15:00')).toMatchInlineSnapshot(
+      `2023-02-19T15:00:00.000Z`
+    );
+  });
 
-  expect(validatePhoneNumber('912345678')).toMatchInlineSnapshot(`false`);
+  test('getObjectKey() - Valid', async () => {
+    expect(getObjectKey(userTypeEnum, 0)).toMatchInlineSnapshot(`"STUDENT"`);
+
+    expect(getObjectKey(userTypeEnum, 1)).toMatchInlineSnapshot(`"STAFF"`);
+
+    expect(getObjectKey(userTypeEnum, 2)).toMatchInlineSnapshot(`"ADMIN"`);
+  });
+
+  test('getObjectKey() - Invalid', async () => {
+    expect(getObjectKey(userTypeEnum, 4)).toMatchInlineSnapshot(`undefined`);
+  });
 });
