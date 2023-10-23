@@ -64,8 +64,13 @@ router.get('/modules', rateLimit(rateLimitConfig), ModuleController.index);
 
 router.get('/users', rateLimit(rateLimitConfig), UserController.index);
 router.post('/user/create', rateLimit(rateLimitConfig), UserController.create);
-router.post('/user/update', rateLimit(rateLimitConfig), UserController.update);
-router.post('/user/login', rateLimit(rateLimitConfig), UserController.login);
+router.post(
+  '/user/update',
+  rateLimit(rateLimitConfig),
+  session(sessionConf),
+  UserController.update
+);
+router.post('/user/login', rateLimit(rateLimitConfig), session(sessionConf), UserController.login);
 router.post('/user/reset-password', rateLimit(rateLimitConfig), UserController.resetPassword);
 router.delete('/user', rateLimit(rateLimitConfig), UserController.destroy);
 router.delete('/user/session', session(sessionConf), UserController.destroySession);
@@ -81,8 +86,8 @@ router.get(
 );
 router.get(
   '/generate/authentication',
-  session(sessionConf),
   rateLimit(rateLimitConfig),
+  session(sessionConf),
   UserController.generateAuthentication
 );
 
