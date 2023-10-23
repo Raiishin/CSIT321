@@ -14,7 +14,6 @@ const ManageAccounts = () => {
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState([]);
-  const [updating, setUpdating] = useState(false);
 
   const getUserTypeText = type => {
     const keys = Object.keys(userTypeEnum);
@@ -43,18 +42,17 @@ const ManageAccounts = () => {
   const getAllUsers = async () => {
     try {
       setLoading(true);
+
       const { usersData: data } = await getAllUserData();
       setUserData(data);
-      console.log('data', data);
-      setLoading(false);
     } catch (error) {
-      console.error('Error fetching user data:', error);
+      alert(error.message);
     }
-    setUpdating(false);
+    setLoading(false);
   };
 
   useEffect(() => {
-    // if the user is not logged in, redirect to the login page using Navigate
+    // If the user is not logged in, redirect to the login page using Navigate
     if (isUndefined(userId) || userType !== userTypeEnum.ADMIN) {
       setPreviousPath(previousPath);
       console.log('redirecting from', previousPath, ' to /login');
@@ -62,7 +60,7 @@ const ManageAccounts = () => {
     }
 
     getAllUsers();
-  }, [userId, setPreviousPath, navigate, previousPath, updating, userData]);
+  }, []);
 
   return (
     <div>
