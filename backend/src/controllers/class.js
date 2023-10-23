@@ -23,6 +23,7 @@ const db = getFirestore(app);
 const classes = collection(db, 'classes');
 const modules = collection(db, 'modules');
 const users = collection(db, 'users');
+const attendanceLogs = collection(db, 'attendance_logs');
 
 // TODO :: Refactor the nested loop if possible
 // 1 possible way is to query for all lecturers first, then each time, filter through the array and find the lecturer name
@@ -82,6 +83,16 @@ const index = async (req, res) => {
 
             classObj.totalStudents = totalStudents;
             classObj.attendees = attendees.length;
+          }
+
+          // Get attendance status of each class
+          if (userData.type === userTypeEnum.STUDENT) {
+            const attendanceLogsQuery = query(attendanceLogs, where('classId', '==', classData.id));
+            const attendanceLogsSnapshot = await getDocs(attendanceLogsQuery);
+
+            classObj.attendanceStatus = !attendanceLogsSnapshot.empty
+              ? attendanceLogsSnapshot.docs[0].data().status
+              : undefined;
           }
 
           // Initialize the classes array if not already present
