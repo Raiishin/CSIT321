@@ -4,6 +4,7 @@ import useGlobalStore from '../store/globalStore';
 import { ColorRing } from 'react-loader-spinner';
 import { isUndefined } from 'lodash';
 import userTypeEnum from '../constants/userTypeEnum';
+import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
 
 const Timetable = () => {
   const [classes, setClasses] = useState([]);
@@ -19,11 +20,23 @@ const Timetable = () => {
     'Lecturer',
     ...(userType === userTypeEnum.STAFF
       ? ['# of Students', '# of Attendees', 'Attendance Rate']
-      : [])
+      : []),
+    ...(userType === userTypeEnum.STUDENT ? ['Attendance Status'] : [])
   ];
 
   const formattedTableRow = child => {
     return <td class="p-3 text-sm font-semibold tracking-wide text-left">{child}</td>;
+  };
+
+  const checkAttendanceStatus = attendanceStatus => {
+    if (attendanceStatus === attendanceStatusEnum.PRESENT) {
+      return 'Present';
+    }
+    if (attendanceStatus === attendanceStatusEnum.LATE) {
+      return 'Late';
+    }
+
+    return 'Unmarked';
   };
 
   useEffect(() => {
@@ -52,7 +65,6 @@ const Timetable = () => {
                 <thead class="bg-light-gray">
                   <tr>{tableHeaders.map(tableHeader => formattedTableRow(tableHeader))}</tr>
                 </thead>
-
                 <tbody>
                   {classes[module].map((classItem, index) => (
                     <>
@@ -72,6 +84,8 @@ const Timetable = () => {
                           formattedTableRow(
                             `${(classItem?.attendees / classItem?.totalStudents) * 100}%`
                           )}
+                        {userType === userTypeEnum.STUDENT &&
+                          formattedTableRow(checkAttendanceStatus(classItem?.attendanceStatus))}
                       </tr>
                     </>
                   ))}
