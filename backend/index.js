@@ -51,7 +51,7 @@ const sessionConf = {
   resave: true,
   saveUninitialized: false,
   cookie: {
-    secure: true, // Set to true as we are using https
+    secure: false, // Set to true as we are using https
     maxAge: 60 * 60 * 1000 // Expire in an hour
   }
 };
