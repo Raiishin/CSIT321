@@ -42,7 +42,7 @@ const { ENABLE_HTTPS, rpID } = process.env;
 
 const rateLimitConfig = {
   windowMs: 1 * 60 * 1000, // 1 minute
-  max: 5, // Maximum number of requests per windowMs (5 per min)
+  max: 15, // Maximum number of requests per windowMs (15 per min)
   message: 'Too many requests from this IP, please try again later.'
 };
 
