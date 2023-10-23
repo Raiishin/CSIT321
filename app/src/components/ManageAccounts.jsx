@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { capitalize, isUndefined } from 'lodash-es';
 import editIcon from '../assets/editing.png';
 import useGlobalStore from '../store/globalStore';
-import { getAllUserData } from '../api/user';
+import { getAllUserData, updateUser } from '../api/user';
 import userTypeEnum from '../constants/userTypeEnum';
 import Loading from './Loading';
 
@@ -25,26 +25,42 @@ const ManageAccounts = () => {
     }
   };
 
+  const handleUnlock = async (id, name, email, address) => {
+    try {
+      setLoading(true);
+
+      const resp = await updateUser(id, name, email, address);
+      console.log(resp);
+
+      await getAllUsers();
+    } catch (error) {
+      alert(error.message);
+    }
+    setLoading(false);
+  };
+
+  const getAllUsers = async () => {
+    try {
+      setLoading(true);
+
+      const { usersData: data } = await getAllUserData();
+      setUserData(data);
+    } catch (error) {
+      alert(error.message);
+    }
+    setLoading(false);
+  };
+
   useEffect(() => {
-    // if the user is not logged in, redirect to the login page using Navigate
+    // If the user is not logged in, redirect to the login page using Navigate
     if (isUndefined(userId) || userType !== userTypeEnum.ADMIN) {
       setPreviousPath(previousPath);
       console.log('redirecting from', previousPath, ' to /login');
       navigate('/login');
     }
 
-    const getAllUsers = async () => {
-      try {
-        const { usersData: data } = await getAllUserData();
-        setUserData(data);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      }
-    };
-
     getAllUsers();
-  }, [userId, setPreviousPath, navigate, previousPath]);
+  }, []);
 
   return (
     <div>
@@ -67,6 +83,7 @@ const ManageAccounts = () => {
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Email</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Address</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Edit</th>
+                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Unlock</th>
                 </tr>
               </thead>
               <tbody>
@@ -89,6 +106,21 @@ const ManageAccounts = () => {
                       <Link to="/account/edit" state={{ data }}>
                         <img src={editIcon} alt="editIcon" className="w-6" />
                       </Link>
+                    </td>
+                    <td className="p-3 text-sm font-semibold tracking-wide text-left">
+                      {data.is_locked ? (
+                        <button
+                          onClick={async () =>
+                            await handleUnlock(data.userId, data.name, data.email, data.address)
+                          }
+                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
+                          Unlock
+                        </button>
+                      ) : (
+                        <button class="bg-transparent hover:bg-blue-500 text-slate-400 font-semibold  py-2 px-4 border border-blue-500 rounded cursor-not-allowed w-28">
+                          Not Locked
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}

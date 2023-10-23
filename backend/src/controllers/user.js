@@ -22,7 +22,6 @@ import userTypeEnum from '../constants/userTypeEnum.js';
 import { isUndefined } from 'lodash-es';
 import errorMessages from '../constants/errorMessages.js';
 import { getUserById, getUserByEmail, checkSession } from '../library/user.js';
-
 import dotenv from 'dotenv';
 import {
   generateRegistrationOptions,
@@ -394,7 +393,7 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, email, address } = req.body;
+  const { id, name, email, address, isLocked } = req.body;
 
   try {
     await checkSession(req);
@@ -407,6 +406,7 @@ const update = async (req, res) => {
     userData.name = name;
     userData.email = email;
     userData.address = address;
+    userData.is_locked = isLocked;
 
     // Update in Firebase
     await setDoc(userRef, userData);
@@ -453,6 +453,10 @@ const login = async (req, res) => {
     const userDocSnapshot = await getDoc(userDocRef);
     const userData = userDocSnapshot.data();
 
+    if (userData.is_locked) {
+      return res.json({ success: false, message: errorMessages.ACCOUNTLOCKED });
+    }
+
     // If user fails login more than 5 times, account will be locked
     if (userData.failed_login_attempts > 4) {
       userData.is_locked = true;
@@ -472,9 +476,6 @@ const login = async (req, res) => {
 
         // Check if passwords match
         if (result) {
-          const session = req.session; // Create session for user
-          session.email = email;
-
           userData.failed_login_attempts = 0; // Reset failed login attempts count
           userData.is_locked = false;
 

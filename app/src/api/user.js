@@ -27,8 +27,14 @@ export const getAllUserData = async () => {
   return data;
 };
 
-export const updateUser = async (id, name, email, address) => {
-  const { data } = await axios.post(`${baseEndpoint}/update`, { id, name, email, address });
+export const updateUser = async (id, name, email, address, isLocked = false) => {
+  const { data } = await axios.post(`${baseEndpoint}/update`, {
+    id,
+    name,
+    email,
+    address,
+    isLocked
+  });
 
   return data;
 };
