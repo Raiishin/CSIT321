@@ -1,15 +1,18 @@
-import { getUserById, getUserByEmail, getTotalStudentsByModuleId } from '../../library/user.js'
+import { getUserById, getUserByEmail, getTotalStudentsByModuleId } from '../../library/user.js';
 
-test('Retrieve User by User Id', async () => {
+describe('Testing Class library functions', () => {
+  const testId = 'zJuAaIbJN7uFX9MG7w2V';
+  const testEmail = 'andy@gmail.com';
 
-    //Valid User ID
-    expect(await getUserById('zJuAaIbJN7uFX9MG7w2V')).toMatchInlineSnapshot(`
+  test('getUserById() - Valid', async () => {
+    expect(await getUserById(testId)).toMatchInlineSnapshot(`
 {
-  "email": "andy@gmail.com",
+  "address": "123 road",
+  "email": "${testEmail}",
   "enrollment_status": "1",
   "failedLoginAttempts": 3,
   "failed_login_attempts": NaN,
-  "id": "zJuAaIbJN7uFX9MG7w2V",
+  "id": "${testId}",
   "is_active": true,
   "is_locked": false,
   "modules": [
@@ -22,51 +25,52 @@ test('Retrieve User by User Id', async () => {
   "type": 0,
 }
 `);
+  });
 
-    //Invalid Class Id
+  test('getUserById() - Invalid', async () => {
     try {
-        const result = await getUserById('Invalid_User_ID');
-        expect(result).toMatchInlineSnapshot();
+      await getUserById('Invalid_User_ID');
     } catch (error) {
-        expect(error).toMatchInlineSnapshot(`[Error: User does not exist]`);
-      }
-});
+      expect(error).toMatchInlineSnapshot(`[Error: User does not exist]`);
+    }
+  });
 
-test('Retrieve User by Email', async () => {
-    
-    //Valid Email
-    expect(await getUserByEmail('gavin@gmail.com')).toMatchInlineSnapshot(`
-{
-  "email": "gavin@gmail.com",
-  "enrollment_status": 0,
-  "failed_login_attempts": 0,
-  "id": "8mdphTDNBkGGhvCd7Jkr",
-  "is_active": true,
-  "is_locked": false,
-  "modules": [
-    "CSCI376",
-    "CSCI361",
-  ],
-  "name": "testing",
-  "password": "$2b$10$rj7KY4Yl52svZHd4.YnLAut6OEHf8uRnMb1pmIuYITMsyzTqgdefS",
-  "type": 0,
-}
+  test('getUserByEmail() - Valid', async () => {
+    expect(await getUserByEmail(testEmail)).toMatchInlineSnapshot(`
+    {
+      "address": "123 road",
+      "email": "${testEmail}",
+      "enrollment_status": "1",
+      "failedLoginAttempts": 3,
+      "failed_login_attempts": NaN,
+      "id": "${testId}",
+      "is_active": true,
+      "is_locked": false,
+      "modules": [
+        "CSCI376",
+        "CSCI361",
+        "CSIT314",
+      ],
+      "name": "&D!",
+      "password": "$2b$10$sUVyJ7BPvv8HiPHlBPsHc.ou9i1HK5sVIYrVsvcGxBQf5IZ7mgaY6",
+      "type": 0,
+    }
 `);
+  });
 
-    //Invalid Class Id
+  test('getUserByEmail() - Invalid', async () => {
     try {
-        const result = await getUserByEmail('Invalid_Email');
-        expect(result).toMatchInlineSnapshot();
+      await getUserByEmail('Invalid_Email');
     } catch (error) {
-        expect(error).toMatchInlineSnapshot(`[Error: User does not exist]`);
-      }
-});
+      expect(error).toMatchInlineSnapshot(`[Error: User does not exist]`);
+    }
+  });
 
-test('Retrieve Total Students by Module Id', async () => {
-
-    //Valid Module ID
+  test('getTotalStudentsByModuleId() - Valid', async () => {
     expect(await getTotalStudentsByModuleId('CSCI376')).toMatchInlineSnapshot(`7`);
+  });
 
-    //Invalid Module ID
+  test('getTotalStudentsByModuleId() - Invalid (Default returns 0)', async () => {
     expect(await getTotalStudentsByModuleId('Invalid_Module_Id')).toMatchInlineSnapshot(`0`);
+  });
 });
