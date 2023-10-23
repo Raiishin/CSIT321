@@ -9,38 +9,36 @@ export const login = async (email, password) => {
   return data;
 };
 
-export const destroySession = async () => {
-  const { data } = await axios.delete(`${baseEndpoint}/session`);
+export const resetPassword = async (email, password, token) => {
+  const { data } = await axios.post(
+    `${baseEndpoint}/reset-password`,
+    { email, password },
+    { headers: { Authorization: token } }
+  );
 
   return data;
 };
 
-export const resetPassword = async (email, password) => {
-  const { data } = await axios.post(`${baseEndpoint}/reset-password`, { email, password });
+export const getAllUserData = async token => {
+  const { data } = await axios.get(`${baseEndpoint}s`, { headers: { Authorization: token } });
 
   return data;
 };
 
-export const getAllUserData = async () => {
-  const { data } = await axios.get(`${baseEndpoint}s`);
+export const updateUser = async (token, id, name, email, address, isLocked) => {
+  const { data } = await axios.post(
+    `${baseEndpoint}/update`,
+    { id, name, email, address, isLocked },
+    { headers: { Authorization: token } }
+  );
 
   return data;
 };
 
-export const updateUser = async (id, name, email, address, isLocked = false) => {
-  const { data } = await axios.post(`${baseEndpoint}/update`, {
-    id,
-    name,
-    email,
-    address,
-    isLocked
+export const createUser = async (params, token) => {
+  const { data } = await axios.post(`${baseEndpoint}/create`, params, {
+    headers: { Authorization: token }
   });
-
-  return data;
-};
-
-export const createUser = async params => {
-  const { data } = await axios.post(`${baseEndpoint}/create`, params);
 
   return data;
 };

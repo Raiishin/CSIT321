@@ -10,8 +10,8 @@ const Timetable = () => {
   const [classes, setClasses] = useState([]);
   const [modules, setModules] = useState([]);
 
-  const userId = useGlobalStore(state => state.userId);
-  const userType = useGlobalStore(state => state.userType);
+  const { userType, token } = useGlobalStore();
+
   const tableHeaders = [
     'Module Code',
     'Venue',
@@ -41,7 +41,7 @@ const Timetable = () => {
 
   useEffect(() => {
     const initializePageData = async () => {
-      const { data } = await getClasses(userId);
+      const { data } = await getClasses(token);
       setClasses(data);
       setModules(Object.keys(data));
     };

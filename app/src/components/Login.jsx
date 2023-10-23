@@ -31,18 +31,24 @@ const Login = () => {
         } else {
           const { id: userId, type: userType, name: userName, devices } = loginResponse;
 
+          let token;
           // Registration
           if (devices.length === 0) {
             // Pass the options to the authenticator and wait for a response
-            await registerUser(userId);
+            const registerAuthenticaionResponse = await registerUser(userId);
+
+            token = registerAuthenticaionResponse.token;
           } else {
             const verifyAuthenticationResponse = await authenticateUser({ userId });
 
             if (!verifyAuthenticationResponse.verified) {
               throw new Error('Authentication failed');
             }
+
+            token = verifyAuthenticationResponse.token;
           }
-          useGlobalStore.setState({ userId, userType: +userType, userName });
+
+          useGlobalStore.setState({ userId, userType: +userType, userName, token });
 
           if (previousPath) {
             console.log('previousPath ', previousPath);

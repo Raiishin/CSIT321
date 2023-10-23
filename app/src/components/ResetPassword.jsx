@@ -40,7 +40,11 @@ const ResetPassword = () => {
         }
 
         // Reset Password
-        const resetPasswordResponse = await resetPassword(email, newPassword);
+        const resetPasswordResponse = await resetPassword(
+          email,
+          newPassword,
+          verifyAuthenticationResponse.token
+        );
 
         if (!resetPasswordResponse.success) {
           throw new Error(resetPasswordResponse.message);

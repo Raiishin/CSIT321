@@ -7,7 +7,7 @@ import { isUndefined } from 'lodash';
 const Attendance = () => {
   const [authenticationStatus, setAuthenticationStatus] = useState('blank');
 
-  const userId = useGlobalStore(state => state.userId);
+  const { userId, token } = useGlobalStore();
 
   const attemptMarkAttendance = async () => {
     try {
@@ -17,7 +17,7 @@ const Attendance = () => {
       );
 
       if (verifyAuthenticationResponse.verified) {
-        const resp = await markAttendance(userId);
+        const resp = await markAttendance(token);
         setAuthenticationStatus(!isUndefined(resp.status) ? resp.status : resp.message);
       }
     } catch (error) {
