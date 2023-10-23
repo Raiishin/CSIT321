@@ -15,6 +15,7 @@ import {
   Select
 } from '@mui/material';
 import userTypeEnum from '../constants/userTypeEnum';
+import useGlobalStore from '../store/globalStore';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -29,6 +30,8 @@ const CreateAccount = () => {
   const [selectedEnrollmentType, setSelectedEnrollmentType] = useState(undefined);
   const [modules, setModules] = useState([]);
   const [selectedModules, setSelectedModules] = useState([]);
+
+  const token = useGlobalStore(state => state.token);
 
   useEffect(() => {
     const getModulesData = async () => {
@@ -88,15 +91,22 @@ const CreateAccount = () => {
 
     if (Object.keys(validationErrors).length === 0) {
       // If there are no validation errors, you can proceed with the form submission
-      const response = await createUser({
-        name,
-        address,
-        email,
-        password,
-        type: +selectedUserType,
-        ...(!isUndefined(selectedEnrollmentType) && { enrollmentStatus: selectedEnrollmentType }),
-        ...(selectedModules.length > 0 && { modules: selectedModules })
-      });
+      const response = await createUser(
+        {
+          name,
+          address,
+          email,
+          password,
+          type: +selectedUserType,
+          ...(!isUndefined(selectedEnrollmentType) && { enrollmentStatus: selectedEnrollmentType }),
+          ...(selectedModules.length > 0 && { modules: selectedModules })
+        },
+        token
+      );
+
+      if (!isUndefined(response.message)) {
+        alert(response.message);
+      }
 
       return navigate('/accounts');
       // Call your API or perform any other necessary action here

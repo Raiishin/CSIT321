@@ -28,7 +28,7 @@ const attendanceLogs = collection(db, 'attendance_logs');
 // TODO :: Refactor the nested loop if possible
 // 1 possible way is to query for all lecturers first, then each time, filter through the array and find the lecturer name
 const index = async (req, res) => {
-  const { userId } = req.query;
+  const { userId } = req;
 
   try {
     // Get user data
@@ -118,8 +118,9 @@ const index = async (req, res) => {
   }
 };
 
+// For Mark Attendance Page
 const latest = async (req, res) => {
-  const { userId } = req.query;
+  const { userId } = req;
 
   try {
     // Get user data

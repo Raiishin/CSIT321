@@ -11,5 +11,8 @@ export default {
   USERUPDATEFAILED: 'User update failed',
   CLASSNOTFOUND: 'Class ID is not found',
   LECTURERNOTFOUND: 'User is not a Lecturer',
-  UNKNOWNSESSION: 'Unknown session has been detected'
+  UNKNOWNSESSION: 'Unknown session has been detected',
+  AUTHENTICATIONTOKENISREQUIRED: 'A token is required for authentication',
+  EXPIREDTOKEN: 'Token has expired',
+  INVALIDTOKEN: 'Invalid Token'
 };

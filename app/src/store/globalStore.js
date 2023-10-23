@@ -4,9 +4,16 @@ const useGlobalStore = create(set => ({
   userId: undefined,
   userType: undefined,
   userName: undefined,
+  token: undefined,
   previousPath: null,
   reset: () =>
-    set({ userId: undefined, userType: undefined, userName: undefined, previousPath: null }),
+    set({
+      userId: undefined,
+      userType: undefined,
+      userName: undefined,
+      token: undefined,
+      previousPath: null
+    }),
   setPreviousPath: previousPath => set({ previousPath })
 }));
 

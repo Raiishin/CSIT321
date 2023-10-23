@@ -5,7 +5,7 @@ import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebas
 import config from '../config/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
 import { latestClass } from '../library/class.js';
-import { getUserById, checkSession } from '../library/user.js';
+import { getUserById } from '../library/user.js';
 import { getObjectKey, convertTimeStringToDate } from '../library/index.js';
 import errorMessages from '../constants/errorMessages.js';
 import { isUndefined } from 'lodash-es';
@@ -17,11 +17,9 @@ const db = getFirestore(app);
 const attendanceLogs = collection(db, 'attendance_logs');
 
 const create = async (req, res) => {
-  const { userId } = req.body;
+  const { userId } = req;
 
   try {
-    await checkSession(req);
-
     // Get user data
     const userData = await getUserById(userId);
 
