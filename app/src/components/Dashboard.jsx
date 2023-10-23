@@ -10,8 +10,6 @@ import logoutImage from '../assets/logout.jpg';
 import createAccountImage from '../assets/create-new-accounts.jpg';
 import editAccountImage from '../assets/edit-accounts.jpg';
 
-import { destroySession } from '../api/user';
-
 const Dashboard = () => {
   const navigate = useNavigate();
 
@@ -32,7 +30,8 @@ const Dashboard = () => {
       <div
         className={`grid grid-cols-${
           userType === userTypeEnum.STAFF ? 2 : 3
-        } gap-10 bg-light-cyan justify-items-center content-center h-[40vh]`}>
+        } gap-10 bg-light-cyan justify-items-center content-center h-[40vh]`}
+      >
         {(userType === userTypeEnum.STUDENT || userType === userTypeEnum.STAFF) && (
           <>
             <button onClick={() => navigate('/timetable')}>
@@ -64,8 +63,8 @@ const Dashboard = () => {
             onClick={async () => {
               reset();
               navigate('/');
-              await destroySession();
-            }}>
+            }}
+          >
             <img src={logoutImage} alt="logoutImage" class="w-40" />
           </button>
         </div>

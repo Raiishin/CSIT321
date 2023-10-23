@@ -10,14 +10,19 @@ import {
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
-import { isUndefined, isEmpty } from 'lodash-es';
 import errorMessages from '../constants/errorMessages.js';
+import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
 const db = getFirestore(app);
 
 const users = collection(db, 'users');
+
+dotenv.config();
+
+const { tokenKey } = process.env;
 
 /**
  * @param {string} userId
@@ -81,10 +86,5 @@ export const getTotalStudentsByModuleId = async moduleId => {
   return usersData.docs.length;
 };
 
-export const checkSession = async req => {
-  console.log('req.cookies', req.cookies);
-
-  if (isEmpty(req.cookies) || isUndefined(req.cookies['connect.sid'])) {
-    throw new Error(errorMessages.UNKNOWNSESSION);
-  }
-};
+export const generateToken = userId =>
+  jwt.sign({ userId }, tokenKey, { algorithm: 'HS512', expiresIn: '1h' });

@@ -21,7 +21,7 @@ import Admin from '../models/admin.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
 import { isUndefined } from 'lodash-es';
 import errorMessages from '../constants/errorMessages.js';
-import { getUserById, getUserByEmail, checkSession } from '../library/user.js';
+import { getUserById, getUserByEmail, generateToken } from '../library/user.js';
 import dotenv from 'dotenv';
 import {
   generateRegistrationOptions,
@@ -118,9 +118,6 @@ const generateAuthentication = async (req, res) => {
 
     const { devices } = user;
 
-    const session = req.session;
-    session.userId = userId;
-
     const options = await generateAuthenticationOptions({
       timeout: 60 * 1000, // (1 minute)
       allowCredentials: devices.map(dev => ({
@@ -176,7 +173,7 @@ const registerUser = async (req, res) => {
       }
     }
 
-    return res.send({ verified });
+    return res.send({ verified, token: generateToken(userId) });
   } catch (error) {
     console.error(error);
     return res.status(400).send({ error: error.message });
@@ -198,9 +195,6 @@ const authenticateUser = async (req, res) => {
     const user = inMemoryUserDeviceDB[userId];
 
     const { devices } = user;
-
-    const session = req.session;
-    session.userId = userId;
 
     let dbAuthenticator;
     const bodyCredIDBuffer = isoBase64URL.toBuffer(body.rawId);
@@ -242,7 +236,7 @@ const authenticateUser = async (req, res) => {
       dbAuthenticator.counter = authenticationInfo.newCounter;
     }
 
-    return res.send({ verified });
+    return res.send({ verified, token: generateToken(userId) });
   } catch (error) {
     console.log(error);
   }
@@ -275,8 +269,6 @@ const create = async (req, res) => {
   const { name, address, email, password, type } = req.body;
 
   try {
-    await checkSession(req);
-
     // Get user data
     const user = await getUserByEmail(email, false);
 
@@ -402,8 +394,6 @@ const update = async (req, res) => {
   const { id, name, email, address, isLocked } = req.body;
 
   try {
-    await checkSession(req);
-
     const userRef = doc(db, 'users', id);
     const userDataRef = await getDoc(userRef);
 
@@ -412,7 +402,10 @@ const update = async (req, res) => {
     userData.name = name;
     userData.email = email;
     userData.address = address;
-    userData.is_locked = isLocked;
+
+    if (!isUndefined(isLocked)) {
+      userData.is_locked = isLocked;
+    }
 
     // Update in Firebase
     await setDoc(userRef, userData);
@@ -482,9 +475,6 @@ const login = async (req, res) => {
 
         // Check if passwords match
         if (result) {
-          const session = req.session;
-          session.userId = userDocSnapshot.id;
-
           userData.failed_login_attempts = 0; // Reset failed login attempts count
           userData.is_locked = false;
 
@@ -510,18 +500,10 @@ const login = async (req, res) => {
   }
 };
 
-const destroySession = async (req, res) => {
-  req.session.destroy();
-
-  return res.send('Session has been destroyed');
-};
-
 const resetPassword = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    await checkSession(req);
-
     // Get current user information via email
     const searchQuery = query(users, where('email', '==', email));
     const usersData = await getDocs(searchQuery);
@@ -577,6 +559,5 @@ export default {
   update,
   destroy,
   login,
-  resetPassword,
-  destroySession
+  resetPassword
 };

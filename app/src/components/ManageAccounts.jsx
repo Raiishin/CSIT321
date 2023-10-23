@@ -9,11 +9,12 @@ import Loading from './Loading';
 
 const ManageAccounts = () => {
   const navigate = useNavigate();
-  const { userId, setPreviousPath, userType } = useGlobalStore();
   const previousPath = window.location.pathname;
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState([]);
+
+  const { userId, setPreviousPath, userType, token } = useGlobalStore();
 
   const getUserTypeText = type => {
     const keys = Object.keys(userTypeEnum);
@@ -29,8 +30,9 @@ const ManageAccounts = () => {
     try {
       setLoading(true);
 
-      const resp = await updateUser(id, name, email, address);
-      console.log(resp);
+      const resp = await updateUser(token, id, name, email, address, false);
+
+      alert(resp.message);
 
       await getAllUsers();
     } catch (error) {
@@ -43,7 +45,7 @@ const ManageAccounts = () => {
     try {
       setLoading(true);
 
-      const { usersData: data } = await getAllUserData();
+      const { usersData: data } = await getAllUserData(token);
       setUserData(data);
     } catch (error) {
       alert(error.message);
@@ -71,10 +73,10 @@ const ManageAccounts = () => {
       ) : (
         <div className="grid grid-cols-2 pt-6">
           <div className="col-span-3 flex justify-center">
-            <p className="text-[#ccd6f6] text-4xl font-bold">Edit Accounts</p>
+            <p className="text-[#ccd6f6] text-4xl font-bold">Manage Accounts</p>
           </div>
 
-          <div className="col-span-3 max-h-[80%] overscroll-auto overflow-y-auto m-12">
+          <div className="col-span-3 max-h-[50%] overscroll-auto overflow-y-auto m-12">
             <table className="border-collapse bg-gray-50 border-b-2 border-slate-500 w-full font-sans">
               <thead className="bg-[#dcdcdc]">
                 <tr>
@@ -111,9 +113,10 @@ const ManageAccounts = () => {
                       {data.is_locked ? (
                         <button
                           onClick={async () =>
-                            await handleUnlock(data.userId, data.name, data.email, data.address)
+                            await handleUnlock(data.id, data.name, data.email, data.address)
                           }
-                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
+                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28"
+                        >
                           Unlock
                         </button>
                       ) : (

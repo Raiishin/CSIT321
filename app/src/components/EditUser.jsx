@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { updateUser } from '../api/user';
+import useGlobalStore from '../store/globalStore';
 
 const EditUser = () => {
   const location = useLocation();
@@ -12,10 +13,12 @@ const EditUser = () => {
   const [newEmail, setNewEmail] = useState(email);
   const [newAddress, setNewAddress] = useState(address);
 
+  const { token } = useGlobalStore();
+
   const navigate = useNavigate();
 
   const handleUpdate = async () => {
-    const res = await updateUser(id, newName, newEmail, newAddress);
+    const res = await updateUser(token, id, newName, newEmail, newAddress);
     if (!res.success) {
       alert(res.message);
     } else {
