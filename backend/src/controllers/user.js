@@ -393,7 +393,7 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, email, address, is_locked } = req.body;
+  const { id, name, email, address, isLocked } = req.body;
 
   try {
     await checkSession(req);
@@ -406,7 +406,7 @@ const update = async (req, res) => {
     userData.name = name;
     userData.email = email;
     userData.address = address;
-    userData.is_locked = is_locked;
+    userData.is_locked = isLocked;
 
     // Update in Firebase
     await setDoc(userRef, userData);
@@ -452,6 +452,10 @@ const login = async (req, res) => {
     const userDocRef = doc(users, id);
     const userDocSnapshot = await getDoc(userDocRef);
     const userData = userDocSnapshot.data();
+
+    if (userData.is_locked) {
+      return res.json({ success: false, message: errorMessages.ACCOUNTLOCKED });
+    }
 
     // If user fails login more than 5 times, account will be locked
     if (userData.failed_login_attempts > 4) {

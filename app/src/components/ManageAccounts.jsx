@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { capitalize, isUndefined } from 'lodash-es';
 import editIcon from '../assets/editing.png';
 import useGlobalStore from '../store/globalStore';
-import { getAllUserData, unlockUser } from '../api/user';
+import { getAllUserData, updateUser } from '../api/user';
 import userTypeEnum from '../constants/userTypeEnum';
 import Loading from './Loading';
 
@@ -25,18 +25,18 @@ const ManageAccounts = () => {
     }
   };
 
-  const handleUnlock = async () => {
-    // code to send an unlock request to the server
-    // const unlockResponse = await unlockUser(userId);
+  const handleUnlock = async (id, name, email, address) => {
+    try {
+      setLoading(true);
 
-    console.log('Sent unlock request');
-    /* if the unlock request was successful, 
-    re-retrieve all the users' data from the server
-    to conveniently show other accounts that may have
-    new lock statuses
-    */
-    getAllUsers();
-    console.log('Running getAllUsers() in handleUnlock()...');
+      const resp = await updateUser(id, name, email, address);
+      console.log(resp);
+
+      await getAllUsers();
+    } catch (error) {
+      alert(error.message);
+    }
+    setLoading(false);
   };
 
   const getAllUsers = async () => {
@@ -110,7 +110,9 @@ const ManageAccounts = () => {
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
                       {data.is_locked ? (
                         <button
-                          onClick={() => handleUnlock(data.userId)}
+                          onClick={async () =>
+                            await handleUnlock(data.userId, data.name, data.email, data.address)
+                          }
                           className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
                           Unlock
                         </button>
