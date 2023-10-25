@@ -2,7 +2,7 @@
 This repository will be the main product that we will be designing and developing for our FYP project.
 
 
-Jira Backlog: https://csit314-project.atlassian.net/jira/software/projects/CSIT/boards/2/backlog
+Jira Backlog: https://csit314-project.atlassian.net/jira/software/projects/CSIT/boards/2/backlog  
 Figma: https://www.figma.com/files/team/1261903488080582373/CSIT321?fuid=1223836359823368264
 
 # Running The App

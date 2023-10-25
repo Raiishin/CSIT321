@@ -8,3 +8,11 @@ export const getClasses = async token => {
 
   return data;
 };
+
+export const getLatestClass = async token => {
+  const { data } = await axios.get(`${config.backendEndpoint}/class/latest`, {
+    headers: { Authorization: token }
+  });
+
+  return data;
+};

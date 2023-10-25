@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { login } from '../api/user';
 import useGlobalStore from '../store/globalStore';
-import Loading from './Loading';
+import LoadingRing from './LoadingRing';
 import { registerUser, authenticateUser } from '../api/auth';
 
 const Login = () => {
@@ -72,7 +72,7 @@ const Login = () => {
 
         {loading ? (
           <div className="flex place-content-center m-16">
-            <Loading />
+            <LoadingRing />
           </div>
         ) : (
           <form onSubmit={handleLogin}>
@@ -107,8 +107,7 @@ const Login = () => {
             <div className="mb-4 pt-5">
               <button
                 type="submit"
-                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded"
-              >
+                className="w-full hover:bg-blue text-light-blue font-semibold hover:text-white py-2 px-4 border border-blue rounded">
                 Login
               </button>
             </div>

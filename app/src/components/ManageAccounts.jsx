@@ -5,7 +5,7 @@ import editIcon from '../assets/editing.png';
 import useGlobalStore from '../store/globalStore';
 import { getAllUserData, updateUser } from '../api/user';
 import userTypeEnum from '../constants/userTypeEnum';
-import Loading from './Loading';
+import LoadingRing from './LoadingRing';
 
 const ManageAccounts = () => {
   const navigate = useNavigate();
@@ -68,15 +68,15 @@ const ManageAccounts = () => {
     <div>
       {loading ? (
         <div className="flex justify-center items-center h-screen">
-          <Loading />
+          <LoadingRing />
         </div>
       ) : (
-        <div className="grid grid-cols-2 pt-6">
+        <div className="grid grid-cols-2 bg-light-brown">
           <div className="col-span-3 flex justify-center">
             <p className="text-[#ccd6f6] text-4xl font-bold">Manage Accounts</p>
           </div>
 
-          <div className="col-span-3 max-h-[50%] overscroll-auto overflow-y-auto m-12">
+          <div className="col-span-3 max-h-[600px] overscroll-auto overflow-y-auto m-12">
             <table className="border-collapse bg-gray-50 border-b-2 border-slate-500 w-full font-sans">
               <thead className="bg-[#dcdcdc]">
                 <tr>
@@ -115,8 +115,7 @@ const ManageAccounts = () => {
                           onClick={async () =>
                             await handleUnlock(data.id, data.name, data.email, data.address)
                           }
-                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28"
-                        >
+                          className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
                           Unlock
                         </button>
                       ) : (
