@@ -44,6 +44,7 @@ router.post(
 router.delete('/user', rateLimit(rateLimitConfig), authMiddleware, UserController.destroy);
 
 router.get('/classes', rateLimit(rateLimitConfig), authMiddleware, ClassController.index);
+router.get('/class/latest', rateLimit(rateLimitConfig), authMiddleware, ClassController.latest);
 
 router.post(
   '/attendance/mark',
