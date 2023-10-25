@@ -9,7 +9,7 @@ describe('Testing Class library functions', () => {
   test('getClassById() - Valid', async () => {
     expect(await getClassById('1SIjOdz3nOSFSZvexRiy')).toMatchInlineSnapshot(`
   {
-    "date": "2023-10-08",
+    "date": "2023-12-30",
     "end_time": "23:45",
     "lecturer_id": "uWZcHDVJxxdz8pqal2TL",
     "module_id": "CSCI376",
