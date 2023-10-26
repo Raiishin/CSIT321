@@ -13,6 +13,7 @@ import Timetable from './components/Timetable';
 import CreateAccount from './components/CreateAccount';
 import ManageAccounts from './components/ManageAccounts';
 import EditUser from './components/EditUser';
+import Logout from './components/Logout';
 
 import useGlobalStore from './store/globalStore';
 import { isUndefined } from 'lodash';
@@ -36,7 +37,7 @@ const App = () => {
             <Route path="/faq" element={<FAQ />} />
             <Route path="/login" element={<Login />} />
             <Route path="/reset-password" element={<ResetPassword />} />
-
+            <Route path="/logout" element={<Logout />} />
             <Route path="/timetable" element={<Timetable />} />
             <Route path="/attendance" element={<Attendance />} />
 

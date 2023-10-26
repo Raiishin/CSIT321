@@ -14,7 +14,6 @@ const ManageAccounts = () => {
 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState([]);
-  const [updating, setUpdating] = useState(false);
 
   const getUserTypeText = type => {
     const keys = Object.keys(userTypeEnum);
@@ -50,7 +49,6 @@ const ManageAccounts = () => {
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
-    setUpdating(false);
   };
 
   useEffect(() => {
@@ -62,7 +60,7 @@ const ManageAccounts = () => {
     }
 
     getAllUsers();
-  }, [userId, setPreviousPath, navigate, previousPath, updating, userData]);
+  }, []);
 
   return (
     <div>
