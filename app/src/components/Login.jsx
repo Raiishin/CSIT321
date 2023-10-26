@@ -112,10 +112,11 @@ const Login = () => {
               </button>
             </div>
 
-            <div className="text-start">
-              <a href="/reset-password" className="text-gray-500 hover:underline">
-                Forgot Password? Click here
-              </a>
+            <div
+              className="text-start cursor text-gray-500 hover:underline hover:text-blue"
+              onClick={() => navigate('/reset-password')}
+            >
+              Forgot Password? Click here
             </div>
           </form>
         )}
