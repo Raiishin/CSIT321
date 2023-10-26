@@ -6,24 +6,24 @@ describe('Testing Class library functions', () => {
 
   test('getUserById() - Valid', async () => {
     expect(await getUserById(testId)).toMatchInlineSnapshot(`
-{
-  "address": "123 road",
-  "email": "${testEmail}",
-  "enrollment_status": "1",
-  "failedLoginAttempts": 3,
-  "failed_login_attempts": NaN,
-  "id": "${testId}",
-  "is_active": true,
-  "is_locked": false,
-  "modules": [
-    "CSCI376",
-    "CSCI361",
-    "CSIT314",
-  ],
-  "name": "&D!",
-  "password": "$2b$10$sUVyJ7BPvv8HiPHlBPsHc.ou9i1HK5sVIYrVsvcGxBQf5IZ7mgaY6",
-  "type": 0,
-}
+    {
+      "address": "123 road",
+      "email": "${testEmail}",
+      "enrollment_status": "1",
+      "failedLoginAttempts": 3,
+      "failed_login_attempts": 0,
+      "id": "${testId}",
+      "is_active": true,
+      "is_locked": true,
+      "modules": [
+        "CSCI376",
+        "CSCI361",
+        "CSIT314",
+      ],
+      "name": "&D!",
+      "password": "$2b$10$/Rj7CENGF6V8zjAIRt9t0O0E9.HOCowxQhYbwTIg9x.9M3JxvVAtO",
+      "type": 0,
+    }
 `);
   });
 
@@ -42,17 +42,17 @@ describe('Testing Class library functions', () => {
       "email": "${testEmail}",
       "enrollment_status": "1",
       "failedLoginAttempts": 3,
-      "failed_login_attempts": NaN,
+      "failed_login_attempts": 0,
       "id": "${testId}",
       "is_active": true,
-      "is_locked": false,
+      "is_locked": true,
       "modules": [
         "CSCI376",
         "CSCI361",
         "CSIT314",
       ],
       "name": "&D!",
-      "password": "$2b$10$sUVyJ7BPvv8HiPHlBPsHc.ou9i1HK5sVIYrVsvcGxBQf5IZ7mgaY6",
+      "password": "$2b$10$/Rj7CENGF6V8zjAIRt9t0O0E9.HOCowxQhYbwTIg9x.9M3JxvVAtO",
       "type": 0,
     }
 `);
