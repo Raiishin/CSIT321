@@ -15,6 +15,7 @@ import { latestClass, sortClasses } from '../library/class.js';
 import { getAttendanceByClassId } from '../library/attendanceLogs.js';
 import { getUserById, getTotalStudentsByModuleId } from '../library/user.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
+import { userIdSchema } from '../validator/index.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);

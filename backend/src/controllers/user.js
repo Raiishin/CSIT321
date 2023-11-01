@@ -30,6 +30,14 @@ import {
   verifyAuthenticationResponse
 } from '@simplewebauthn/server';
 import { isoBase64URL, isoUint8Array } from '@simplewebauthn/server/helpers';
+import {
+  createUserSchema,
+  updateUserSchema,
+  userIdSchema,
+  loginSchema,
+  registerSchema,
+  authenticationSchema
+} from '../validator/index.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -58,8 +66,9 @@ const inMemoryUserDeviceDB = {
 };
 
 const generateRegistration = async (req, res) => {
-  const { userId } = req.query;
   try {
+    const { userId } = userIdSchema.parse(req.query);
+
     if (!inMemoryUserDeviceDB.hasOwnProperty(userId)) {
       inMemoryUserDeviceDB[userId] = {
         id: userId,
@@ -136,9 +145,9 @@ const generateAuthentication = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-  const { expectedChallenge, userId, ...body } = req.body;
-
+  //const { expectedChallenge, userId, ...body } = req.body;
   try {
+    const { expectedChallenge, userId, ...body } = registerSchema.parse(req.body);
     const user = inMemoryUserDeviceDB[userId];
 
     const { devices } = user;
@@ -182,7 +191,8 @@ const registerUser = async (req, res) => {
 
 const authenticateUser = async (req, res) => {
   try {
-    const { expectedChallenge, ...body } = req.body;
+    //const { expectedChallenge, ...body } = req.body;
+    const { expectedChallenge, ...body } = authenticationSchema.parse(req.body);
 
     let userId = body?.userId ?? '';
 
@@ -253,9 +263,9 @@ const index = async (req, res) => {
 
 // TODO :: Should refactor this to by email as well
 const view = async (req, res) => {
-  const { userId } = req.query;
-
+  //const { userId } = req.query;
   try {
+    const { userId } = userIdSchema.parse(req.query);
     // Get user data
     const userData = await getUserById(userId);
 
@@ -266,14 +276,22 @@ const view = async (req, res) => {
 };
 
 const create = async (req, res) => {
-  const { name, address, email, password, type } = req.body;
-
   try {
+    const { name, address, email, password, type } = createUserSchema.parse(req.body);
     // Get user data
     const user = await getUserByEmail(email, false);
 
     if (!isUndefined(user) && !isUndefined(user.id)) {
       throw new Error(errorMessages.USERALREADYEXISTS);
+    }
+
+    // Validate if user already exists using email
+    const searchQuery = query(users, where('email', '==', email));
+    const usersData = await getDocs(searchQuery);
+
+    // Error handling if email already exists
+    if (usersData.docs.length !== 0) {
+      throw new Error('This email already exists');
     }
 
     const newUserData = {
@@ -391,9 +409,9 @@ const create = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { id, name, email, address, isLocked } = req.body;
-
   try {
+    const { id, name, email, address, isLocked } = updateUserSchema.parse(req.body);
+    // Get current user information via email
     const userRef = doc(db, 'users', id);
     const userDataRef = await getDoc(userRef);
 
@@ -418,9 +436,9 @@ const update = async (req, res) => {
 };
 
 const destroy = async (req, res) => {
-  const { userId } = req.query;
-
+  //const { userId } = req.query;
   try {
+    const { userId } = userIdSchema.parse(req.query);
     // Get a reference to the user document
     const userRef = doc(db, 'users', userId);
     const userDataRef = await getDoc(userRef);
@@ -442,9 +460,8 @@ const destroy = async (req, res) => {
 
 // Returns an additional response key (success: Boolean!)
 const login = async (req, res) => {
-  const { email, password } = req.body;
-
   try {
+    const { email, password } = loginSchema.parse(req.body);
     // Get user data
     const { id } = await getUserByEmail(email);
 
@@ -501,9 +518,9 @@ const login = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  const { email, password } = req.body;
-
+  //const { email, password } = req.body;
   try {
+    const { email, password } = loginSchema.parse(req.body);
     // Get current user information via email
     const searchQuery = query(users, where('email', '==', email));
     const usersData = await getDocs(searchQuery);
