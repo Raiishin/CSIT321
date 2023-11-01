@@ -34,9 +34,7 @@ import {
   createUserSchema,
   updateUserSchema,
   userIdSchema,
-  loginSchema,
-  registerSchema,
-  authenticationSchema
+  loginSchema
 } from '../validator/index.js';
 
 // Initialize Firebase
@@ -145,9 +143,9 @@ const generateAuthentication = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-  //const { expectedChallenge, userId, ...body } = req.body;
+  const { expectedChallenge, userId, ...body } = req.body;
+
   try {
-    const { expectedChallenge, userId, ...body } = registerSchema.parse(req.body);
     const user = inMemoryUserDeviceDB[userId];
 
     const { devices } = user;
@@ -190,10 +188,9 @@ const registerUser = async (req, res) => {
 };
 
 const authenticateUser = async (req, res) => {
-  try {
-    //const { expectedChallenge, ...body } = req.body;
-    const { expectedChallenge, ...body } = authenticationSchema.parse(req.body);
+  const { expectedChallenge, ...body } = req.body;
 
+  try {
     let userId = body?.userId ?? '';
 
     if (!isUndefined(body.email)) {
