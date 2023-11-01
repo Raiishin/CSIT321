@@ -32,16 +32,3 @@ export const loginSchema = z
     password: z.coerce.string().min(8)
   })
   .strict();
-
-export const registerSchema = z.object({
-  expectedChallenge: z.unknown().has('expectedChallenge', {
-    message: 'The "expectedChallenge" is required in the JSON object.'
-  }),
-  userId: z.coerce.string().min(1)
-});
-
-export const authenticationSchema = z.object({
-  expectedChallenge: z.unknown().has('expectedChallenge', {
-    message: 'The "expectedChallenge" is required in the JSON object.'
-  })
-});
