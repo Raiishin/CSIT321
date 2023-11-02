@@ -21,6 +21,7 @@ import { getObjectKey } from '../library/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
 import { isUndefined } from 'lodash-es';
 import errorMessages from '../constants/errorMessages.js';
+import enrollmentStatusEnum from '../constants/enrollmentStatusEnum.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -59,7 +60,15 @@ const index = async (req, res) => {
         classes,
         and(
           where('module_id', '==', moduleId),
-          or(where('period', 'in', [userData.enrollment_status, enrollmentStatusEnum.COMBINED]))
+          or(
+            where(
+              'period',
+              'in',
+              userData.type === userTypeEnum.STUDENT
+                ? [userData.enrollment_status, enrollmentStatusEnum.COMBINED]
+                : Object.values(enrollmentStatusEnum)
+            )
+          )
         )
       );
       const classesSnapshot = await getDocs(classesQuery);
@@ -140,7 +149,7 @@ const latest = async (req, res) => {
     // Retrieve Module IDs
     const moduleIds = userData.modules;
 
-    const userLatestClass = await latestClass(moduleIds, userData.enrollment_status);
+    const userLatestClass = await latestClass(moduleIds, userData.enrollment_status, userData.type);
 
     if (isUndefined(userLatestClass)) {
       throw new Error(errorMessages.NOCLASSESAVAILABLE);

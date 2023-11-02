@@ -35,7 +35,7 @@ const create = async (req, res) => {
     const moduleIds = userData.modules;
 
     // Retrieve latest class
-    const userLatestClass = await latestClass(moduleIds, userData.enrollment_status);
+    const userLatestClass = await latestClass(moduleIds, userData.enrollment_status, userData.type);
     console.log('userLatestClass', userLatestClass);
 
     if (isUndefined(userLatestClass)) {

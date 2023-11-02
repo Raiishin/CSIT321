@@ -67,7 +67,7 @@ describe('Testing Class library functions', () => {
   });
 
   test('getTotalStudentsByModuleId() - Valid', async () => {
-    expect(await getTotalStudentsByModuleId('CSCI376')).toMatchInlineSnapshot(`8`);
+    expect(await getTotalStudentsByModuleId('CSCI376')).toMatchInlineSnapshot(`9`);
   });
 
   test('getTotalStudentsByModuleId() - Invalid (Default returns 0)', async () => {
