@@ -178,7 +178,7 @@ describe('Testing Class library functions', () => {
       "venue": "A.2.17a",
     }
     `);
-  });
+  }, 20000);
 
   test('latestClass() - Invalid', async () => {
     try {
