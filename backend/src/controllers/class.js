@@ -19,6 +19,8 @@ import { getUserById, getTotalStudentsByModuleId } from '../library/user.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
 import { getObjectKey } from '../library/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
+import { isUndefined } from 'lodash-es';
+import errorMessages from '../constants/errorMessages.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -128,7 +130,6 @@ const index = async (req, res) => {
   }
 };
 
-// For Mark Attendance Page
 const latest = async (req, res) => {
   const { userId } = req;
 
@@ -140,6 +141,10 @@ const latest = async (req, res) => {
     const moduleIds = userData.modules;
 
     const userLatestClass = await latestClass(moduleIds, userData.enrollment_status);
+
+    if (isUndefined(userLatestClass)) {
+      throw new Error(errorMessages.NOCLASSESAVAILABLE);
+    }
 
     // Check if class is already marked
     const attendanceLogsQuery = query(
