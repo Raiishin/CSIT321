@@ -106,10 +106,10 @@ const CreateAccount = () => {
 
       if (!isUndefined(response.message)) {
         alert(response.message);
+      } else {
+        alert('Success');
+        return navigate('/accounts');
       }
-
-      return navigate('/accounts');
-      // Call your API or perform any other necessary action here
     } else {
       console.log('validationErrors', validationErrors);
       // If there are validation errors, update the state to display error messages
@@ -220,9 +220,9 @@ const CreateAccount = () => {
             <>
               <div className="flex flex-row items-center">
                 <p className="text-gray-700 font-bold mr-4">Enrolment Type:</p>
-                <RadioGroup row onChange={e => setSelectedEnrollmentType(e.target.value)}>
-                  <FormControlLabel value="FT" control={<Radio />} label="Full-time" />
-                  <FormControlLabel value="PT" control={<Radio />} label="Part-time" />
+                <RadioGroup row onChange={e => setSelectedEnrollmentType(+e.target.value)}>
+                  <FormControlLabel value={0} control={<Radio />} label="Full-time" />
+                  <FormControlLabel value={1} control={<Radio />} label="Part-time" />
                 </RadioGroup>
                 {errors.selectedEnrollmentType && (
                   <div className="text-red ml-2">{errors.selectedEnrollmentType}</div>
@@ -254,8 +254,7 @@ const CreateAccount = () => {
                       PaperProps: {
                         style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 }
                       }
-                    }}
-                  >
+                    }}>
                     {modules.map(module => (
                       <MenuItem key={module.id} value={module.id}>
                         {module.id}: {module.name}
@@ -273,8 +272,7 @@ const CreateAccount = () => {
           <div className="mb-4 pt-5">
             <button
               className="bg-[#75c058] w-full text-white font-bold py-2 px-4 rounded shadow-md"
-              type="submit"
-            >
+              type="submit">
               Create
             </button>
           </div>

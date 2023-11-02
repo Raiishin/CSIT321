@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import userTypeEnum from '../constants/userTypeEnum.js';
+import enrollmentStatusEnum from '../constants/enrollmentStatusEnum.js';
 
 export const createUserSchema = z
   .object({
@@ -9,7 +10,7 @@ export const createUserSchema = z
     password: z.coerce.string().min(8),
     type: z.nativeEnum(userTypeEnum),
     modules: z.array(z.string()).optional(),
-    enrollmentStatus: z.coerce.number().int().max(1).optional()
+    enrollmentStatus: z.nativeEnum(enrollmentStatusEnum)
   })
   .strict();
 
