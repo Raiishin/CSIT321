@@ -9,8 +9,7 @@ export const createUserSchema = z
     password: z.coerce.string().min(8),
     type: z.nativeEnum(userTypeEnum),
     modules: z.array(z.string()).optional(),
-    //enrollmentStatus: z.enum([0,1]).optional()
-    enrollmentStatus: z.number().int().max(1).optional()
+    enrollmentStatus: z.coerce.number().int().max(1).optional()
   })
   .strict();
 
@@ -20,7 +19,7 @@ export const updateUserSchema = z
     name: z.coerce.string().min(1),
     address: z.coerce.string().min(1),
     email: z.coerce.string().min(1).email(),
-    isLocked: z.boolean().optional()
+    isLocked: z.coerce.boolean().optional()
   })
   .strict();
 
