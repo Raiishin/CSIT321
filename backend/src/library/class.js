@@ -6,13 +6,16 @@ import {
   doc,
   getDoc,
   query,
-  where
+  where,
+  and,
+  or
 } from 'firebase/firestore/lite';
 import Class from '../models/class.js';
 import config from '../config/index.js';
 import { isAfter, isBefore, isSameDay } from 'date-fns';
 import { convertTimeStringToDate } from './index.js';
 import errorMessages from '../constants/errorMessages.js';
+import enrollmentStatusEnum from '../constants/enrollmentStatusEnum.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -46,7 +49,6 @@ export const getClassById = async classId => {
  * @throws an error message if class is not found
  */
 export const getClassesIdByModuleId = async moduleId => {
-
   const searchQuery = query(classes, where('module_id', '==', moduleId));
   const classDocSnapshot = await getDocs(searchQuery);
 
@@ -57,7 +59,6 @@ export const getClassesIdByModuleId = async moduleId => {
   const classIds = classDocSnapshot.docs.map(doc => doc.id);
   return classIds;
 };
-
 
 export const sortClasses = classesByModuleArr => {
   const arr = [...classesByModuleArr];
@@ -81,7 +82,7 @@ export const sortClasses = classesByModuleArr => {
   return arr;
 };
 
-export const latestClass = async moduleIds => {
+export const latestClass = async (moduleIds, period) => {
   const classesData = [];
 
   // Retrieve Modules data
@@ -93,7 +94,13 @@ export const latestClass = async moduleIds => {
 
     const moduleName = moduleDocSnapshot.data().name;
 
-    const classesQuery = query(classes, where('module_id', '==', moduleId));
+    const classesQuery = query(
+      classes,
+      and(
+        where('module_id', '==', moduleId),
+        or(where('period', 'in', [period, enrollmentStatusEnum.COMBINED]))
+      )
+    );
     const classesSnapshot = await getDocs(classesQuery);
 
     const moduleClassesData = classesSnapshot.docs.map(doc => {

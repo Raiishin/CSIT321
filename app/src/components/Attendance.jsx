@@ -3,7 +3,7 @@ import { authenticateUser } from '../api/auth';
 import useGlobalStore from '../store/globalStore';
 import { markAttendance } from '../api/attendance';
 import { getLatestClass } from '../api/class';
-import { isUndefined, isNaN } from 'lodash';
+import { isUndefined } from 'lodash';
 import LoadingRing from './LoadingRing';
 
 const Attendance = () => {
@@ -11,6 +11,11 @@ const Attendance = () => {
   const [loading, setLoading] = useState(false);
 
   const { userId, token } = useGlobalStore();
+
+  const retrieveLatestClassData = async () => {
+    const resp = await getLatestClass(token);
+    setLatestClassData(resp === '' ? undefined : resp);
+  };
 
   const attemptMarkAttendance = async () => {
     try {
@@ -25,6 +30,8 @@ const Attendance = () => {
 
         alert(!isUndefined(resp.status) ? resp.status : resp.message);
       }
+
+      await retrieveLatestClassData();
     } catch (error) {
       // Some basic error handling
       alert(error.message);
@@ -33,11 +40,6 @@ const Attendance = () => {
 
   useEffect(() => {
     setLoading(true);
-
-    const retrieveLatestClassData = async () => {
-      const resp = await getLatestClass(token);
-      setLatestClassData(resp === '' ? undefined : resp);
-    };
 
     retrieveLatestClassData();
 
@@ -62,8 +64,14 @@ const Attendance = () => {
           </p>
           <p className="bold text-2xl">Lecturer: {latestClassData.lecturerName}</p>
 
-          <button className="mt-2 bg-green border p-2 pl-8 pr-8" onClick={attemptMarkAttendance}>
-            Take Attendance
+          <button
+            className={`mt-2 border p-2 pl-8 pr-8 ${
+              latestClassData.marked === 'PRESENT' && 'bg-green-400'
+            }
+            ${latestClassData.marked === 'LATE' && 'bg-red'}`}
+            onClick={attemptMarkAttendance}
+            disabled={latestClassData.marked !== ''}>
+            {latestClassData.marked !== '' ? latestClassData.marked : 'Take Attendance'}
           </button>
         </div>
       )}
