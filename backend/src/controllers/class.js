@@ -7,7 +7,9 @@ import {
   doc,
   getDoc,
   query,
-  where
+  where,
+  and,
+  or
 } from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import Class from '../models/class.js';
@@ -15,7 +17,10 @@ import { latestClass, sortClasses } from '../library/class.js';
 import { getAttendanceByClassId } from '../library/attendanceLogs.js';
 import { getUserById, getTotalStudentsByModuleId } from '../library/user.js';
 import userTypeEnum from '../constants/userTypeEnum.js';
-import { userIdSchema } from '../validator/index.js';
+import { getObjectKey } from '../library/index.js';
+import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
+import { isUndefined } from 'lodash-es';
+import errorMessages from '../constants/errorMessages.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -50,7 +55,13 @@ const index = async (req, res) => {
 
       const moduleName = moduleDocSnapshot.data().name;
 
-      const classesQuery = query(classes, where('module_id', '==', moduleId));
+      const classesQuery = query(
+        classes,
+        and(
+          where('module_id', '==', moduleId),
+          or(where('period', 'in', [userData.enrollment_status, enrollmentStatusEnum.COMBINED]))
+        )
+      );
       const classesSnapshot = await getDocs(classesQuery);
 
       const moduleClassesData = classesSnapshot.docs.map(doc => {
@@ -119,7 +130,6 @@ const index = async (req, res) => {
   }
 };
 
-// For Mark Attendance Page
 const latest = async (req, res) => {
   const { userId } = req;
 
@@ -130,7 +140,26 @@ const latest = async (req, res) => {
     // Retrieve Module IDs
     const moduleIds = userData.modules;
 
-    const userLatestClass = await latestClass(moduleIds);
+    const userLatestClass = await latestClass(moduleIds, userData.enrollment_status);
+
+    if (isUndefined(userLatestClass)) {
+      throw new Error(errorMessages.NOCLASSESAVAILABLE);
+    }
+
+    // Check if class is already marked
+    const attendanceLogsQuery = query(
+      attendanceLogs,
+      and(where('classId', '==', userLatestClass.id), where('userId', '==', userId))
+    );
+    const attendanceLogsSnapshot = await getDocs(attendanceLogsQuery);
+
+    if (attendanceLogsSnapshot.empty) {
+      userLatestClass.marked = '';
+    } else {
+      attendanceLogsSnapshot.docs.map(doc => {
+        userLatestClass.marked = getObjectKey(attendanceStatusEnum, doc.data().status);
+      });
+    }
 
     return res.json(userLatestClass);
   } catch (error) {

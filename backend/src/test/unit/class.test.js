@@ -1,3 +1,4 @@
+import enrollmentStatusEnum from '../../constants/enrollmentStatusEnum.js';
 import {
   getClassById,
   getClassesIdByModuleId,
@@ -10,10 +11,10 @@ describe('Testing Class library functions', () => {
     expect(await getClassById('1SIjOdz3nOSFSZvexRiy')).toMatchInlineSnapshot(`
   {
     "date": "2023-11-02",
-    "end_time": "12:00",
+    "end_time": "23:59",
     "lecturer_id": "uWZcHDVJxxdz8pqal2TL",
     "module_id": "CSCI376",
-    "period": "PT",
+    "period": 1,
     "start_time": "09:00",
     "type": "Lecture",
     "venue": "A.2.17a",
@@ -51,7 +52,7 @@ describe('Testing Class library functions', () => {
         startTime: '08:30',
         endTime: '11:30',
         lecturerName: 'Sionggo Japit',
-        period: 'FT',
+        period: 0,
         type: 'Tutorial',
         venue: 'A.2.17b',
         totalStudents: 0,
@@ -65,7 +66,7 @@ describe('Testing Class library functions', () => {
         startTime: '12:00',
         endTime: '15:00',
         lecturerName: 'Sionggo Japit',
-        period: 'FT',
+        period: 0,
         type: 'Lecture',
         venue: 'A.1.15',
         totalStudents: 0,
@@ -79,7 +80,7 @@ describe('Testing Class library functions', () => {
         startTime: '08:30',
         endTime: '11:30',
         lecturerName: 'Sionggo Japit',
-        period: 'FT',
+        period: 0,
         type: 'Lecture',
         venue: 'A.2.17',
         totalStudents: 0,
@@ -99,7 +100,7 @@ describe('Testing Class library functions', () => {
     "lecturerName": "Sionggo Japit",
     "moduleId": "CSCI368",
     "moduleName": "Network Security",
-    "period": "FT",
+    "period": 0,
     "startTime": "12:00",
     "totalStudents": 0,
     "type": "Lecture",
@@ -113,7 +114,7 @@ describe('Testing Class library functions', () => {
     "lecturerName": "Sionggo Japit",
     "moduleId": "CSCI368",
     "moduleName": "Network Security",
-    "period": "FT",
+    "period": 0,
     "startTime": "08:30",
     "totalStudents": 0,
     "type": "Tutorial",
@@ -127,7 +128,7 @@ describe('Testing Class library functions', () => {
     "lecturerName": "Sionggo Japit",
     "moduleId": "CSCI368",
     "moduleName": "Network Security",
-    "period": "FT",
+    "period": 0,
     "startTime": "08:30",
     "totalStudents": 0,
     "type": "Lecture",
@@ -148,7 +149,7 @@ describe('Testing Class library functions', () => {
   });
 
   test('latestClass() - Valid', async () => {
-    expect(await latestClass(['CSIT321'])).toMatchInlineSnapshot(`
+    expect(await latestClass(['CSIT321'], enrollmentStatusEnum.PARTTIME)).toMatchInlineSnapshot(`
     {
       "date": "2024-05-02",
       "endTime": "22:00",
@@ -156,13 +157,28 @@ describe('Testing Class library functions', () => {
       "lecturerName": "Sionggo Japit",
       "moduleId": "CSIT321",
       "moduleName": "Project",
-      "period": "PT",
+      "period": 1,
       "startTime": "19:00",
       "type": "Lecture",
       "venue": "A.1.09",
     }
     `);
-  });
+
+    expect(await latestClass(['CSIT314'], enrollmentStatusEnum.FULLTIME)).toMatchInlineSnapshot(`
+    {
+      "date": "2024-01-08",
+      "endTime": "11:30",
+      "id": "D0YzcjwCcQnlYNlyy03I",
+      "lecturerName": "Loo PK",
+      "moduleId": "CSIT314",
+      "moduleName": "Software Development Methodologies",
+      "period": 0,
+      "startTime": "08:30",
+      "type": "Lecture",
+      "venue": "A.2.17a",
+    }
+    `);
+  }, 20000);
 
   test('latestClass() - Invalid', async () => {
     try {

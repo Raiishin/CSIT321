@@ -3,14 +3,22 @@ import { authenticateUser } from '../api/auth';
 import useGlobalStore from '../store/globalStore';
 import { markAttendance } from '../api/attendance';
 import { getLatestClass } from '../api/class';
-import { isUndefined, isNaN } from 'lodash';
+import { isUndefined } from 'lodash';
 import LoadingRing from './LoadingRing';
 
 const Attendance = () => {
   const [latestClassData, setLatestClassData] = useState(undefined);
   const [loading, setLoading] = useState(false);
+  const [noClasses, setNoClasses] = useState(false);
 
   const { userId, token } = useGlobalStore();
+
+  const retrieveLatestClassData = async () => {
+    const resp = await getLatestClass(token);
+
+    setNoClasses(!isUndefined(resp.message));
+    setLatestClassData(resp === '' ? undefined : resp);
+  };
 
   const attemptMarkAttendance = async () => {
     try {
@@ -25,6 +33,8 @@ const Attendance = () => {
 
         alert(!isUndefined(resp.status) ? resp.status : resp.message);
       }
+
+      await retrieveLatestClassData();
     } catch (error) {
       // Some basic error handling
       alert(error.message);
@@ -33,11 +43,6 @@ const Attendance = () => {
 
   useEffect(() => {
     setLoading(true);
-
-    const retrieveLatestClassData = async () => {
-      const resp = await getLatestClass(token);
-      setLatestClassData(resp === '' ? undefined : resp);
-    };
 
     retrieveLatestClassData();
 
@@ -51,21 +56,37 @@ const Attendance = () => {
       {loading || isUndefined(latestClassData) ? (
         <LoadingRing />
       ) : (
-        <div className="flex flex-col gap-2">
-          <p className="bold text-2xl">
-            Class: {latestClassData.moduleId} - {latestClassData.moduleName}
-          </p>
-          <p className="bold text-2xl">Type: {latestClassData.type}</p>
-          <p className="bold text-2xl">Date: {latestClassData.date}</p>
-          <p className="bold text-2xl">
-            Time: {latestClassData.startTime} - {latestClassData.endTime}
-          </p>
-          <p className="bold text-2xl">Lecturer: {latestClassData.lecturerName}</p>
+        <>
+          {noClasses ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-2xl">
+                You don't have any more classes to attend for this semester
+              </p>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <p className="bold text-2xl">
+                Class: {latestClassData.moduleId} - {latestClassData.moduleName}
+              </p>
+              <p className="bold text-2xl">Type: {latestClassData.type}</p>
+              <p className="bold text-2xl">Date: {latestClassData.date}</p>
+              <p className="bold text-2xl">
+                Time: {latestClassData.startTime} - {latestClassData.endTime}
+              </p>
+              <p className="bold text-2xl">Lecturer: {latestClassData.lecturerName}</p>
 
-          <button className="mt-2 bg-green border p-2 pl-8 pr-8" onClick={attemptMarkAttendance}>
-            Take Attendance
-          </button>
-        </div>
+              <button
+                className={`mt-2 border p-2 pl-8 pr-8 ${
+                  latestClassData.marked === 'PRESENT' && 'bg-green-400'
+                }
+            ${latestClassData.marked === 'LATE' && 'bg-red'}`}
+                onClick={attemptMarkAttendance}
+                disabled={latestClassData.marked !== ''}>
+                {latestClassData.marked !== '' ? latestClassData.marked : 'Take Attendance'}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

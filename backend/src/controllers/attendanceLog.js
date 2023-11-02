@@ -1,7 +1,15 @@
 // Attendance Log Controller
 import { differenceInMinutes, isBefore, isAfter } from 'date-fns';
 import { initializeApp } from 'firebase/app';
-import { getFirestore, collection, addDoc, query, where, getDocs } from 'firebase/firestore/lite';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  and
+} from 'firebase/firestore/lite';
 import config from '../config/index.js';
 import attendanceStatusEnum from '../constants/attendanceStatusEnum.js';
 import { latestClass } from '../library/class.js';
@@ -27,7 +35,7 @@ const create = async (req, res) => {
     const moduleIds = userData.modules;
 
     // Retrieve latest class
-    const userLatestClass = await latestClass(moduleIds);
+    const userLatestClass = await latestClass(moduleIds, userData.enrollment_status);
     console.log('userLatestClass', userLatestClass);
 
     if (isUndefined(userLatestClass)) {
@@ -35,7 +43,10 @@ const create = async (req, res) => {
     }
 
     // Check if class is already marked
-    const attendanceLogsQuery = query(attendanceLogs, where('classId', '==', userLatestClass.id));
+    const attendanceLogsQuery = query(
+      attendanceLogs,
+      and(where('classId', '==', userLatestClass.id), where('userId', '==', userId))
+    );
     const attendanceLogsSnapshot = await getDocs(attendanceLogsQuery);
 
     attendanceLogsSnapshot.docs.map(doc => {
