@@ -1,4 +1,5 @@
 import enrollmentStatusEnum from '../../constants/enrollmentStatusEnum.js';
+import userTypeEnum from '../../constants/userTypeEnum.js';
 import {
   getClassById,
   getClassesIdByModuleId,
@@ -15,7 +16,7 @@ describe('Testing Class library functions', () => {
     "lecturer_id": "uWZcHDVJxxdz8pqal2TL",
     "module_id": "CSCI376",
     "period": 1,
-    "start_time": "09:00",
+    "start_time": "17:00",
     "type": "Lecture",
     "venue": "A.2.17a",
   }
@@ -149,7 +150,8 @@ describe('Testing Class library functions', () => {
   });
 
   test('latestClass() - Valid', async () => {
-    expect(await latestClass(['CSIT321'], enrollmentStatusEnum.PARTTIME)).toMatchInlineSnapshot(`
+    expect(await latestClass(['CSIT321'], enrollmentStatusEnum.PARTTIME, userTypeEnum.STUDENT))
+      .toMatchInlineSnapshot(`
     {
       "date": "2024-05-02",
       "endTime": "22:00",
@@ -164,7 +166,8 @@ describe('Testing Class library functions', () => {
     }
     `);
 
-    expect(await latestClass(['CSIT314'], enrollmentStatusEnum.FULLTIME)).toMatchInlineSnapshot(`
+    expect(await latestClass(['CSIT314'], enrollmentStatusEnum.FULLTIME, userTypeEnum.STUDENT))
+      .toMatchInlineSnapshot(`
     {
       "date": "2024-01-08",
       "endTime": "11:30",

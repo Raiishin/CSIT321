@@ -16,6 +16,7 @@ import { isAfter, isBefore, isSameDay } from 'date-fns';
 import { convertTimeStringToDate } from './index.js';
 import errorMessages from '../constants/errorMessages.js';
 import enrollmentStatusEnum from '../constants/enrollmentStatusEnum.js';
+import userTypeEnum from '../constants/userTypeEnum.js';
 
 // Initialize Firebase
 const app = initializeApp(config.firebaseConfig);
@@ -82,7 +83,7 @@ export const sortClasses = classesByModuleArr => {
   return arr;
 };
 
-export const latestClass = async (moduleIds, period) => {
+export const latestClass = async (moduleIds, period, userType) => {
   const classesData = [];
 
   // Retrieve Modules data
@@ -98,7 +99,15 @@ export const latestClass = async (moduleIds, period) => {
       classes,
       and(
         where('module_id', '==', moduleId),
-        or(where('period', 'in', [period, enrollmentStatusEnum.COMBINED]))
+        or(
+          where(
+            'period',
+            'in',
+            userType === userTypeEnum.STUDENT
+              ? [period, enrollmentStatusEnum.COMBINED]
+              : Object.values(enrollmentStatusEnum)
+          )
+        )
       )
     );
     const classesSnapshot = await getDocs(classesQuery);
