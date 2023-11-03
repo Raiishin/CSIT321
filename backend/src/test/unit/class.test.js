@@ -9,18 +9,18 @@ import {
 
 describe('Testing Class library functions', () => {
   test('getClassById() - Valid', async () => {
-    expect(await getClassById('1SIjOdz3nOSFSZvexRiy')).toMatchInlineSnapshot(`
-  {
-    "date": "2023-11-03",
-    "end_time": "14:00",
-    "lecturer_id": "uWZcHDVJxxdz8pqal2TL",
-    "module_id": "CSCI376",
-    "period": 1,
-    "start_time": "13:00",
-    "type": "Lecture",
-    "venue": "A.2.17a",
-  }
-  `);
+    expect(await getClassById('Vd44VYG68BAMK49lQh9e')).toMatchInlineSnapshot(`
+{
+  "date": "2024-11-06",
+  "end_time": "22:00",
+  "lecturer_id": "XeEdrrEeytTRC6xJwZWm",
+  "module_id": "CSCI251",
+  "period": 1,
+  "start_time": "19:00",
+  "type": "Tutorial",
+  "venue": "A.2.17a",
+}
+`);
   });
 
   test('getClassById() - Invalid', async () => {
@@ -32,11 +32,14 @@ describe('Testing Class library functions', () => {
   });
 
   test('getClassesIdByModuleId() - Valid', async () => {
-    expect(await getClassesIdByModuleId('CSCI376')).toMatchInlineSnapshot(`
+    expect(await getClassesIdByModuleId('CSCI251')).toMatchInlineSnapshot(`
 [
-  "1SIjOdz3nOSFSZvexRiy",
-  "8dQKNsnvq6jn8Hzm7Tnw",
-  "J3HBZHW12OxfVXc3aEtM",
+  "3DpHwsIgNcDUCHxkFzwd",
+  "4IBJx2JnGmMLKRAoqbxE",
+  "7o2vUPfLb0hvDdnxC7Gs",
+  "8OeD6qRscLTz5aJTQPDL",
+  "CV4ClynR2Q9llFrTT8al",
+  "Vd44VYG68BAMK49lQh9e",
 ]
 `);
   });
@@ -150,37 +153,37 @@ describe('Testing Class library functions', () => {
   });
 
   test('latestClass() - Valid', async () => {
-    expect(await latestClass(['CSIT321'], enrollmentStatusEnum.PARTTIME, userTypeEnum.STUDENT))
+    expect(await latestClass(['CSCI251'], enrollmentStatusEnum.PARTTIME, userTypeEnum.STUDENT))
       .toMatchInlineSnapshot(`
-    {
-      "date": "2024-05-02",
-      "endTime": "22:00",
-      "id": "Y6TIrgYrfsZH9Fnrt4F1",
-      "lecturerName": "Sionggo Japit",
-      "moduleId": "CSIT321",
-      "moduleName": "Project",
-      "period": 1,
-      "startTime": "19:00",
-      "type": "Lecture",
-      "venue": "A.1.09",
-    }
-    `);
+{
+  "date": "2024-11-05",
+  "endTime": "22:00",
+  "id": "CV4ClynR2Q9llFrTT8al",
+  "lecturerName": "testing",
+  "moduleId": "CSCI251",
+  "moduleName": "Advanced Programming",
+  "period": 1,
+  "startTime": "19:00",
+  "type": "Lecture",
+  "venue": "A.2.17a",
+}
+`);
 
-    expect(await latestClass(['CSIT314'], enrollmentStatusEnum.FULLTIME, userTypeEnum.STUDENT))
+    expect(await latestClass(['CSCI251'], enrollmentStatusEnum.FULLTIME, userTypeEnum.STUDENT))
       .toMatchInlineSnapshot(`
-    {
-      "date": "2024-01-08",
-      "endTime": "11:30",
-      "id": "D0YzcjwCcQnlYNlyy03I",
-      "lecturerName": "Loo PK",
-      "moduleId": "CSIT314",
-      "moduleName": "Software Development Methodologies",
-      "period": 0,
-      "startTime": "08:30",
-      "type": "Lecture",
-      "venue": "A.2.17a",
-    }
-    `);
+{
+  "date": "2024-11-05",
+  "endTime": "12:00",
+  "id": "8OeD6qRscLTz5aJTQPDL",
+  "lecturerName": "testing",
+  "moduleId": "CSCI251",
+  "moduleName": "Advanced Programming",
+  "period": 0,
+  "startTime": "09:00",
+  "type": "Lecture",
+  "venue": "A.2.17a",
+}
+`);
   }, 20000);
 
   test('latestClass() - Invalid', async () => {
