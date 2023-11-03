@@ -10,7 +10,7 @@ export const createUserSchema = z
     password: z.coerce.string().min(8),
     type: z.nativeEnum(userTypeEnum),
     modules: z.array(z.string()).optional(),
-    enrollmentStatus: z.nativeEnum(enrollmentStatusEnum)
+    enrollmentStatus: z.nativeEnum(enrollmentStatusEnum).optional()
   })
   .strict();
 
