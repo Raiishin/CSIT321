@@ -8,6 +8,7 @@ import AttendanceLogController from './src/controllers/attendanceLog.js';
 import http from 'http';
 import rateLimit from 'express-rate-limit';
 import authMiddleware from './src/middleware/auth.js';
+import { stayAlive } from './src/library/index.js';
 
 dotenv.config();
 
@@ -74,3 +75,5 @@ router.post('/verify/registration', rateLimit(rateLimitConfig), UserController.r
 router.post('/verify/authentication', rateLimit(rateLimitConfig), UserController.authenticateUser);
 
 app.use('/', router); //to use the routes
+
+stayAlive();
