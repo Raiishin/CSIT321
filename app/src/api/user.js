@@ -42,3 +42,13 @@ export const createUser = async (params, token) => {
 
   return data;
 };
+
+export const resetBiometrics = async (token, userId) => {
+  const { data } = await axios.post(
+    `${baseEndpoint}/reset-biometrics`,
+    { userId },
+    { headers: { Authorization: token } }
+  );
+
+  return data;
+};

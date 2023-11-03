@@ -249,6 +249,21 @@ const authenticateUser = async (req, res) => {
   }
 };
 
+const resetUserBiometrics = async (req, res) => {
+  try {
+    const { userId } = userIdSchema.parse(req.body);
+
+    if (inMemoryUserDeviceDB.hasOwnProperty(userId)) {
+      inMemoryUserDeviceDB[userId].devices = [];
+    }
+
+    return res.send({ success: true });
+  } catch (error) {
+    console.log(error);
+    return res.json(error);
+  }
+};
+
 const index = async (req, res) => {
   const usersSnapshot = await getDocs(users);
   const usersData = usersSnapshot.docs.map(doc => {
@@ -260,9 +275,9 @@ const index = async (req, res) => {
 
 // TODO :: Should refactor this to by email as well
 const view = async (req, res) => {
-  //const { userId } = req.query;
   try {
     const { userId } = userIdSchema.parse(req.query);
+
     // Get user data
     const userData = await getUserById(userId);
 
@@ -275,6 +290,7 @@ const view = async (req, res) => {
 const create = async (req, res) => {
   try {
     const { name, address, email, password, type } = createUserSchema.parse(req.body);
+
     // Get user data
     const user = await getUserByEmail(email, false);
 
@@ -413,6 +429,7 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   try {
     const { id, name, email, address, isLocked } = updateUserSchema.parse(req.body);
+
     // Get current user information via email
     const userRef = doc(db, 'users', id);
     const userDataRef = await getDoc(userRef);
@@ -438,9 +455,9 @@ const update = async (req, res) => {
 };
 
 const destroy = async (req, res) => {
-  //const { userId } = req.query;
   try {
     const { userId } = userIdSchema.parse(req.query);
+
     // Get a reference to the user document
     const userRef = doc(db, 'users', userId);
     const userDataRef = await getDoc(userRef);
@@ -464,6 +481,7 @@ const destroy = async (req, res) => {
 const login = async (req, res) => {
   try {
     const { email, password } = loginSchema.parse(req.body);
+
     // Get user data
     const { id } = await getUserByEmail(email);
 
@@ -520,9 +538,9 @@ const login = async (req, res) => {
 };
 
 const resetPassword = async (req, res) => {
-  //const { email, password } = req.body;
   try {
     const { email, password } = loginSchema.parse(req.body);
+
     // Get current user information via email
     const searchQuery = query(users, where('email', '==', email));
     const usersData = await getDocs(searchQuery);
@@ -572,6 +590,7 @@ export default {
   generateAuthentication,
   registerUser,
   authenticateUser,
+  resetUserBiometrics,
   index,
   view,
   create,
