@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { capitalize, isUndefined } from 'lodash-es';
 import editIcon from '../assets/editing.png';
 import useGlobalStore from '../store/globalStore';
-import { getAllUserData, updateUser } from '../api/user';
+import { getAllUserData, updateUser, resetBiometrics } from '../api/user';
 import userTypeEnum from '../constants/userTypeEnum';
 import LoadingRing from './LoadingRing';
 
@@ -35,6 +35,23 @@ const ManageAccounts = () => {
       alert(resp.message);
 
       await getAllUsers();
+    } catch (error) {
+      alert(error.message);
+    }
+    setLoading(false);
+  };
+
+  const resetUserBiometrics = async id => {
+    try {
+      setLoading(true);
+
+      const resp = await resetBiometrics(token, id);
+
+      if (resp.success) {
+        await getAllUsers();
+      } else {
+        throw new Error(resp);
+      }
     } catch (error) {
       alert(error.message);
     }
@@ -86,6 +103,7 @@ const ManageAccounts = () => {
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Address</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Edit</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Unlock</th>
+                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Biometrics</th>
                 </tr>
               </thead>
               <tbody>
@@ -123,6 +141,13 @@ const ManageAccounts = () => {
                           Not Locked
                         </button>
                       )}
+                    </td>
+                    <td className="p-3 text-sm font-semibold tracking-wide text-left">
+                      <button
+                        onClick={async () => await resetUserBiometrics(data.id)}
+                        className="bg-white hover:bg-gray-100 text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow w-28">
+                        Reset
+                      </button>
                     </td>
                   </tr>
                 ))}

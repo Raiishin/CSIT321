@@ -39,7 +39,7 @@ const CreateAccount = () => {
       setModules(data);
     };
 
-    if (selectedUserType === userTypeEnum.STUDENT) {
+    if (selectedUserType === userTypeEnum.STUDENT || selectedUserType === userTypeEnum.STAFF) {
       getModulesData();
     }
   }, [selectedUserType]);
@@ -217,56 +217,57 @@ const CreateAccount = () => {
           </div>
 
           {selectedUserType === userTypeEnum.STUDENT && (
-            <>
-              <div className="flex flex-row items-center">
-                <p className="text-gray-700 font-bold mr-4">Enrolment Type:</p>
-                <RadioGroup row onChange={e => setSelectedEnrollmentType(+e.target.value)}>
-                  <FormControlLabel value={0} control={<Radio />} label="Full-time" />
-                  <FormControlLabel value={1} control={<Radio />} label="Part-time" />
-                </RadioGroup>
-                {errors.selectedEnrollmentType && (
-                  <div className="text-red ml-2">{errors.selectedEnrollmentType}</div>
-                )}
-              </div>
+            <div className="flex flex-row items-center">
+              <p className="text-gray-700 font-bold mr-4">Enrolment Type:</p>
+              <RadioGroup row onChange={e => setSelectedEnrollmentType(+e.target.value)}>
+                <FormControlLabel value={0} control={<Radio />} label="Full-time" />
+                <FormControlLabel value={1} control={<Radio />} label="Part-time" />
+              </RadioGroup>
+              {errors.selectedEnrollmentType && (
+                <div className="text-red ml-2">{errors.selectedEnrollmentType}</div>
+              )}
+            </div>
+          )}
 
-              <div className="flex flex-row items-center">
-                <FormControl variant="standard" sx={{ width: 500 }}>
-                  <InputLabel>Enrolled Modules</InputLabel>
-                  <Select
-                    multiple
-                    value={selectedModules}
-                    onChange={e => {
-                      const {
-                        target: { value }
-                      } = e;
+          {(selectedUserType === userTypeEnum.STUDENT ||
+            selectedUserType === userTypeEnum.STAFF) && (
+            <div className="flex flex-row items-center">
+              <FormControl variant="standard" sx={{ width: 500 }}>
+                <InputLabel>Enrolled Modules</InputLabel>
+                <Select
+                  multiple
+                  value={selectedModules}
+                  onChange={e => {
+                    const {
+                      target: { value }
+                    } = e;
 
-                      // On autofill we get a stringified value.
-                      setSelectedModules(isString(value) ? value.split(',') : value);
-                    }}
-                    renderValue={selected => (
-                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                        {selected.map(value => (
-                          <Chip key={value} label={value} />
-                        ))}
-                      </Box>
-                    )}
-                    MenuProps={{
-                      PaperProps: {
-                        style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 }
-                      }
-                    }}>
-                    {modules.map(module => (
-                      <MenuItem key={module.id} value={module.id}>
-                        {module.id}: {module.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-                {errors.selectedModules && (
-                  <div className="text-red ml-2">{errors.selectedModules}</div>
-                )}
-              </div>
-            </>
+                    // On autofill we get a stringified value.
+                    setSelectedModules(isString(value) ? value.split(',') : value);
+                  }}
+                  renderValue={selected => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map(value => (
+                        <Chip key={value} label={value} />
+                      ))}
+                    </Box>
+                  )}
+                  MenuProps={{
+                    PaperProps: {
+                      style: { maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP, width: 250 }
+                    }
+                  }}>
+                  {modules.map(module => (
+                    <MenuItem key={module.id} value={module.id}>
+                      {module.id}: {module.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              {errors.selectedModules && (
+                <div className="text-red ml-2">{errors.selectedModules}</div>
+              )}
+            </div>
           )}
 
           <div className="mb-4 pt-5">

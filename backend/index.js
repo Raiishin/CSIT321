@@ -41,6 +41,12 @@ router.post(
   authMiddleware,
   UserController.resetPassword
 );
+router.post(
+  '/user/reset-biometrics',
+  rateLimit(rateLimitConfig),
+  authMiddleware,
+  UserController.resetUserBiometrics
+);
 router.delete('/user', rateLimit(rateLimitConfig), authMiddleware, UserController.destroy);
 
 router.get('/classes', rateLimit(rateLimitConfig), authMiddleware, ClassController.index);
