@@ -301,8 +301,8 @@ const create = async (req, res) => {
       failed_login_attempts: 0
     };
 
-    if (type === userTypeEnum.STUDENT) {
-      const { modules, enrollmentStatus } = req.body;
+    if (type === userTypeEnum.STUDENT || type === userTypeEnum.STAFF) {
+      const { modules } = req.body;
 
       const modulesCollection = collection(db, 'modules');
       const modulesSnapshot = await getDocs(modulesCollection);
@@ -317,7 +317,12 @@ const create = async (req, res) => {
       }
 
       newUserData.modules = modules;
-      newUserData.enrollment_status = enrollmentStatus;
+
+      if (type === userTypeEnum.STUDENT) {
+        const { enrollmentStatus } = req.body;
+
+        newUserData.enrollment_status = enrollmentStatus;
+      }
     }
 
     return bcrypt.hash(password, config.salt, async (err, hash) => {
