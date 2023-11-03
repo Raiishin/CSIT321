@@ -56,7 +56,7 @@ const Timetable = () => {
       </div>
 
       {!isUndefined(classes) && modules.length > 0 ? (
-        <div className="w-full col-span-3 flex pb-20 items-center justify-center min-w-[70%] flex flex-col">
+        <div className="w-full col-span-3 flex pb-20 items-center justify-center min-w-[70%] flex flex-col bg-light-brown">
           {modules.map(module => (
             <div className="w-full p-4">
               <h1 className="text-white text-2xl">Module Code: {module}</h1>
