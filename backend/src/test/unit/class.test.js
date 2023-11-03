@@ -11,12 +11,12 @@ describe('Testing Class library functions', () => {
   test('getClassById() - Valid', async () => {
     expect(await getClassById('1SIjOdz3nOSFSZvexRiy')).toMatchInlineSnapshot(`
   {
-    "date": "2023-11-02",
-    "end_time": "23:59",
+    "date": "2023-11-03",
+    "end_time": "14:00",
     "lecturer_id": "uWZcHDVJxxdz8pqal2TL",
     "module_id": "CSCI376",
     "period": 1,
-    "start_time": "17:00",
+    "start_time": "13:00",
     "type": "Lecture",
     "venue": "A.2.17a",
   }
