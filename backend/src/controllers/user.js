@@ -470,7 +470,7 @@ const destroy = async (req, res) => {
     // Delete the user document
     await deleteDoc(userRef);
 
-    return res.json({ message: 'User has been deleted successfully!' });
+    return res.json({ success: true });
   } catch (error) {
     console.error('Error deleting user:', error);
     return res.json({ message: error.message });

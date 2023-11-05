@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { capitalize, isUndefined } from 'lodash-es';
 import editIcon from '../assets/editing.png';
+import deleteIcon from '../assets/delete.png';
 import useGlobalStore from '../store/globalStore';
-import { getAllUserData, updateUser, resetBiometrics } from '../api/user';
+import { getAllUserData, updateUser, resetBiometrics, deleteUser } from '../api/user';
 import userTypeEnum from '../constants/userTypeEnum';
 import LoadingRing from './LoadingRing';
 
@@ -35,6 +36,23 @@ const ManageAccounts = () => {
       alert(resp.message);
 
       await getAllUsers();
+    } catch (error) {
+      alert(error.message);
+    }
+    setLoading(false);
+  };
+
+  const handleDelete = async id => {
+    try {
+      setLoading(true);
+
+      const resp = await deleteUser(token, id);
+
+      if (resp.success) {
+        await getAllUsers();
+      } else {
+        throw new Error(resp);
+      }
     } catch (error) {
       alert(error.message);
     }
@@ -101,9 +119,11 @@ const ManageAccounts = () => {
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Name</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Email</th>
                   <th className="p-3 text-sm font-semibold tracking-wide text-left">Address</th>
-                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Edit</th>
-                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Unlock</th>
-                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Biometrics</th>
+                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Actions</th>
+                  <th className="p-3 text-sm font-semibold tracking-wide text-left">Unlock User</th>
+                  <th className="p-3 text-sm font-semibold tracking-wide text-left">
+                    Reset User Biometrics
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -122,10 +142,13 @@ const ManageAccounts = () => {
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
                       {data.address}
                     </td>
-                    <td className="p-3 text-sm font-semibold tracking-wide text-left">
+                    <td className="p-3 text-sm font-semibold tracking-wide text-left flex flex-row gap-4">
                       <Link to="/account/edit" state={{ data }}>
                         <img src={editIcon} alt="editIcon" className="w-6" />
                       </Link>
+                      <div onClick={async () => await handleDelete(data.id)}>
+                        <img src={deleteIcon} alt="deleteIcon" className="w-6" />
+                      </div>
                     </td>
                     <td className="p-3 text-sm font-semibold tracking-wide text-left">
                       {data.is_locked ? (
