@@ -43,6 +43,15 @@ export const createUser = async (params, token) => {
   return data;
 };
 
+export const deleteUser = async (token, userId) => {
+  const { data } = await axios.delete(baseEndpoint, {
+    params: { userId },
+    headers: { Authorization: token }
+  });
+
+  return data;
+};
+
 export const resetBiometrics = async (token, userId) => {
   const { data } = await axios.post(
     `${baseEndpoint}/reset-biometrics`,
