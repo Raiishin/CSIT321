@@ -14,7 +14,7 @@ export const convertTimeStringToDate = (date, timeString = '00:00') => {
 
 export const stayAlive = () => {
   const interval = 10 * 1000; // interval in milliseconds - {1mins x 60s x 1000}ms
-  const url = 'https://test-app-123-1213.herokuapp.com';
+  const url = 'https://csit321-project-backend.onrender.com';
   try {
     console.log('Hello');
     const handler = setInterval(() => {
